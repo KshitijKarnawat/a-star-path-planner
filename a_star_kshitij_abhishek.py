@@ -1,7 +1,7 @@
 """
 dijkstra.py
 
-@breif:     this module implements Dijkstra's algorithm for finding the shortest path in a graph.
+@breif:     this module implements A-star algorithm for finding the shortest path in a graph.
 @author:    Kshitij Karnawat
 @date:      6th March 2024
 @version:   1.0
@@ -14,7 +14,7 @@ import time
 class NewNode:
     """Class to represent a node in the graph
     """
-    def __init__(self, coord, parent, cost):
+    def __init__(self, coord, parent, cost_to_go, cost_to_come):
         """Initializes the node with its coordinates, parent and cost
 
         Args:
@@ -24,7 +24,8 @@ class NewNode:
         """
         self.coord = coord
         self.parent = parent
-        self.cost = cost
+        self.cost_to_go = cost_to_go
+        self.cost_to_come = cost_to_come
     
 def move_right(node):
     """Moves tp the right node
