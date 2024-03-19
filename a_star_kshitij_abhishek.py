@@ -364,8 +364,8 @@ def create_map():
 
     return game_map
 
-def dijkstra(start, goal):
-    """Finds the shortest path from start to goal using Dijkstra's algorithm
+def a_star(start, goal):
+    """Finds the shortest path from start to goal using A-Star algorithm
 
     Args:
         start (tuple): Start coordinates
@@ -375,7 +375,6 @@ def dijkstra(start, goal):
         list: A list of explored nodes
         list: A list of coordinates representing the shortest path
     """
-
     # Initialize open and closed lists
     open_list = []
     open_list_info = {}
@@ -385,16 +384,17 @@ def dijkstra(start, goal):
     explored_nodes = []
 
     # Create start node and add it to open list
-    start_node = NewNode(start, None, 0)
-    open_list.append((start_node, start_node.cost))
+    start_node = NewNode(start, None, calc_manhattan_distance(start, goal) ,0)
+    open_list.append((start_node, start_node.total_cost))
     open_list_info[start_node.coord] = start_node
 
     start_time = time.time()
     while open_list:
 
-        # Get the node with the minimum cost and add to closed list
-        open_list.sort(key=lambda x: x[1]) # sort open list based on cost
-        node, node_cost = open_list.pop(0)
+        # Get the node with the minimum total cost and add to closed list
+        open_list.sort(key=lambda x: x[1]) # sort open list based on total cost
+        node, _ = open_list.pop(0)
+        cost_to_come = node.cost_to_come
         open_list_info.pop(node.coord)
         closed_list.append(node)
         closed_list_info[node.coord] = node
@@ -404,31 +404,32 @@ def dijkstra(start, goal):
             path = backtrack_path(node)
 
             end_time = time.time()
-            print("Time taken by Dijkstra: ", end_time - start_time, " seconds")
-
+            print("Time taken by A*: ", end_time - start_time, " seconds")
             return explored_nodes, path
 
         else:
-            children = get_child_nodes(node)
+            children = get_child_nodes(node, goal)
             for child, child_cost in children:
                 if child.coord in closed_list_info.keys():
                     del child
                     continue
 
                 if child.coord in open_list_info.keys():
-                    if child_cost + node_cost < open_list_info[child.coord].cost:
-                        open_list_info[child.coord].cost = child_cost + node_cost
+                    if child_cost + cost_to_come < open_list_info[child.coord].cost_to_come:
+                        open_list_info[child.coord].cost_to_come = child_cost + cost_to_come
+                        open_list_info[child.coord].total_cost = open_list_info[child.coord].cost_to_come + open_list_info[child.coord].cost_to_go
                         open_list_info[child.coord].parent = node
                 else:
-                    child.cost = child_cost + node_cost
+                    child.cost_to_come = child_cost + cost_to_come
+                    child.total_cost = child.cost_to_come + child.cost_to_go
                     child.parent = node
-                    open_list.append((child, child.cost))
+                    open_list.append((child, child.total_cost))
                     open_list_info[child.coord] = child
 
                     explored_nodes.append(child.coord)
 
     end_time = time.time()
-    print("Time taken by Dijkstra: ", end_time - start_time, " seconds")
+    print("Time taken by A*: ", end_time - start_time, " seconds")
     return explored_nodes, None
 
 def backtrack_path(goal_node):
