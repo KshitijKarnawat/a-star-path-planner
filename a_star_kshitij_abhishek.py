@@ -15,7 +15,7 @@ import time
 class NewNode:
     """Class to represent a node in the graph
     """
-    def __init__(self, coord, parent, cost_to_go, cost_to_come):
+    def __init__(self, coord, parent, cost_, cost_to_goto_come):
         """Initializes the node with its coordinates, parent and cost
 
         Args:
@@ -170,7 +170,7 @@ def move_forward(L, node, goal_coord):
     child = NewNode((int(round(updated_x, 0)), int(round(updated_y, 0)), theta), node, node.cost_to_come + L,
                                node.cost_to_come + L + cost_to_go)
 
-    return cost_to_go, child
+    return child, cost_to_go
 
 def small_left_turn(L, node, goal_coord):
     x, y, theta = node.coord
@@ -182,7 +182,7 @@ def small_left_turn(L, node, goal_coord):
     child = NewNode((int(round(updated_x, 0)), int(round(updated_y, 0)), theta), node, node.cost_to_come + L,
                                node.cost_to_come + L + cost_to_go)
 
-    return cost_to_go, child
+    return child, cost_to_go
 
 def small_right_turn(L, node, goal_coord):
     x, y, theta = node.coord
@@ -194,7 +194,7 @@ def small_right_turn(L, node, goal_coord):
     child = NewNode((int(round(updated_x, 0)), int(round(updated_y, 0)), theta), node, node.cost_to_come + L,
                                node.cost_to_come + L + cost_to_go)
 
-    return cost_to_go, child
+    return child, cost_to_go
 
 def big_left_turn(L, node, goal_coord):
     x, y, theta = node.coord
@@ -206,7 +206,7 @@ def big_left_turn(L, node, goal_coord):
     child = NewNode((int(round(updated_x, 0)), int(round(updated_y, 0)), theta), node, node.cost_to_come + L,
                                node.cost_to_come + L + cost_to_go)
 
-    return cost_to_go, child
+    return child, cost_to_go
 
 def big_right_turn(L, node, goal_coord):
     x, y, theta = node.coord
@@ -218,10 +218,10 @@ def big_right_turn(L, node, goal_coord):
     child = NewNode((int(round(updated_x, 0)), int(round(updated_y, 0)), theta), node, node.cost_to_come + L,
                                node.cost_to_come + L + cost_to_go)
 
-    return cost_to_go, child
+    return child, cost_to_go
 
 # TODO: Modify as per the action space
-def get_child_nodes(node, goal_coord):
+def get_child_nodes(L, node, goal_coord):
     """Generates all possible child nodes for the given node
 
     Args:
@@ -243,61 +243,35 @@ def get_child_nodes(node, goal_coord):
     child_nodes = []
 
     # Create all possible child nodes
-    if x < x_max:
-        child, child_cost = move_up(node, goal_coord)
-        if not in_obstacles(child.coord):
-            child_nodes.append((child, child_cost))
-        else:
-            del child
+    child, child_cost = move_forward(L, node, goal_coord)
+    if not in_obstacles(child.coord):
+        child_nodes.append((child, child_cost))
+    else:
+        del child
 
-    if x > x_min:
-        child, child_cost = move_down(node, goal_coord)
-        if not in_obstacles(child.coord):
-            child_nodes.append((child, child_cost))
-        else:
-            del child
+    child, child_cost = small_left_turn(node, goal_coord)
+    if not in_obstacles(child.coord):
+        child_nodes.append((child, child_cost))
+    else:
+        del child
 
-    if y < y_max:
-        child, child_cost = move_right(node, goal_coord)
-        if not in_obstacles(child.coord):
-            child_nodes.append((child, child_cost))
-        else:
-            del child
+    child, child_cost = small_right_turn(L, node, goal_coord)
+    if not in_obstacles(child.coord):
+        child_nodes.append((child, child_cost))
+    else:
+        del child
 
-    if y > y_min:
-        child, child_cost = move_left(node, goal_coord)
-        if not in_obstacles(child.coord):
-            child_nodes.append((child, child_cost))
-        else:
-            del child
+    child, child_cost = big_left_turn(L, node, goal_coord)
+    if not in_obstacles(child.coord):
+        child_nodes.append((child, child_cost))
+    else:
+        del child
 
-    if x < x_max and y < y_max:
-        child, child_cost = move_up_right(node, goal_coord)
-        if not in_obstacles(child.coord):
-            child_nodes.append((child, child_cost))
-        else:
-            del child
-
-    if x < x_max and y > y_min:
-        child, child_cost = move_up_left(node, goal_coord)
-        if not in_obstacles(child.coord):
-            child_nodes.append((child, child_cost))
-        else:
-            del child
-
-    if x > x_min and y < y_max:
-        child, child_cost = move_down_right(node, goal_coord)
-        if not in_obstacles(child.coord):
-            child_nodes.append((child, child_cost))
-        else:
-            del child
-
-    if x > x_min and y > y_min:
-        child, child_cost = move_down_left(node, goal_coord)
-        if not in_obstacles(child.coord):
-            child_nodes.append((child, child_cost))
-        else:
-            del child
+    child, child_cost = big_right_turn(L, node, goal_coord)
+    if not in_obstacles(child.coord):
+        child_nodes.append((child, child_cost))
+    else:
+        del child
 
     return child_nodes
 
@@ -427,6 +401,8 @@ def main():
     # get start and end points from user
     start_point = (int(input("Enter x coordinate of start point: ")), int(input("Enter y coordinate of start point: ")))
     goal_point = (int(input("Enter x coordinate of goal point: ")), int(input("Enter y coordinate of goal point: ")))
+
+    L = int(input("Enter the step length of the robot (1 <= L <= 10): "))
 
     # Check if start and goal points are in obstacles
     if in_obstacles(start_point):
