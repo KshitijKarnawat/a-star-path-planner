@@ -11,6 +11,27 @@ import numpy as np
 import cv2 as cv
 import time
 
+
+def calculate_time(func):
+    """Decorator to get function execution time
+
+    Args:
+        func(): Function whose time is to be calculated
+    """
+    def function_timer(*args, **kwargs):
+
+        # storing time before function execution
+        begin = time.time()
+
+        func(*args, **kwargs)
+
+        # storing time after function execution
+        end = time.time()
+        print("Total time taken in : ", func.__name__, end - begin)
+
+    return function_timer
+
+
 class NewNode:
     """Class to represent a node in the graph
     """
@@ -20,7 +41,8 @@ class NewNode:
         Args:
             coord (tuple): Coordinates of the node
             parent (NewNode): Parent node of the current node
-            cost (float): Cost to reach the current node
+            cost_to_go (float): Cost to reach the current node
+            cost_to_come (float): A-Star Hueristic for the current node (Eucledian Distance)
         """
         self.coord = coord
         self.parent = parent
@@ -232,6 +254,7 @@ def in_obstacles(coord):
 
     return False
 
+# TODO: Modify as per the action space
 def get_child_nodes(node, goal_coord):
     """Generates all possible child nodes for the given node
 
@@ -388,7 +411,6 @@ def a_star(start, goal):
     open_list.append((start_node, start_node.total_cost))
     open_list_info[start_node.coord] = start_node
 
-    start_time = time.time()
     while open_list:
 
         # Get the node with the minimum total cost and add to closed list
@@ -402,9 +424,6 @@ def a_star(start, goal):
         # Check if goal reached
         if node.coord == goal:
             path = backtrack_path(node)
-
-            end_time = time.time()
-            print("Time taken by A*: ", end_time - start_time, " seconds")
             return explored_nodes, path
 
         else:
@@ -428,10 +447,9 @@ def a_star(start, goal):
 
                     explored_nodes.append(child.coord)
 
-    end_time = time.time()
-    print("Time taken by A*: ", end_time - start_time, " seconds")
     return explored_nodes, None
 
+# Reused from Previous Assignment
 def backtrack_path(goal_node):
     """Backtracking algorithm for Dijkstra's algorithm
 
@@ -448,7 +466,9 @@ def backtrack_path(goal_node):
         parent = parent.parent
     return path[::-1]
 
-def vizualize_path(game_map, start, goal, path, explored_nodes):
+# Reused from Previous Assignment
+# TODO: Modify if required
+def vizualize(game_map, start, goal, path, explored_nodes):
     """Vizualizes the path and explored nodes
 
     Args:
@@ -458,7 +478,6 @@ def vizualize_path(game_map, start, goal, path, explored_nodes):
         path (list): A list of coordinates representing the shortest path
         explored_nodes (list): A list of explored nodes
     """
-    start_time = time.time()
     cv.circle(game_map, (start[0], game_map.shape[0] - start[1] - 1), 5, (0, 0, 255), -1)
     cv.circle(game_map, (goal[0], game_map.shape[0] - goal[1] - 1), 5, (0, 255, 0), -1)
 
@@ -473,9 +492,6 @@ def vizualize_path(game_map, start, goal, path, explored_nodes):
             game_video.write(game_map.astype(np.uint8))
             count = 0
 
-    mid_time = time.time()
-    print("Time taken to visualize explored nodes: ", mid_time - start_time, " seconds")
-
     for coord in path:
         # print(type(game_map))
         game_map[game_map.shape[0] - coord[1], coord[0]] = [0, 0, 0]
@@ -486,8 +502,7 @@ def vizualize_path(game_map, start, goal, path, explored_nodes):
     cv.circle(game_map_copy, (goal[0], game_map.shape[0] - goal[1] - 1), 5, (0, 255, 0), 2)
     cv.imwrite('final_map.png', game_map_copy)
     game_video.release()
-    end_time = time.time()
-    print("Time taken to visualize path: ", end_time - mid_time, " seconds")
+
 
 def main():
     game_map = create_map()
@@ -511,7 +526,7 @@ def main():
         print("No path found")
 
     # visualize path
-    vizualize_path(game_map, start_point, goal_point, shortest_path, explored_nodes)
+    vizualize(game_map, start_point, goal_point, shortest_path, explored_nodes)
 
     # show map
     cv.imshow('Map', game_map)
