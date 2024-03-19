@@ -42,23 +42,7 @@ def calc_manhattan_distance(current_coord, goal_coord):
         Float: Manhattan distance which is cost to move to the goal node
     """
 
-    return np.linalg.norm(np.asarray((current_coord[0], current_coord[1])) - np.asarray((goal_coord[0], goal_coord[1])))
-
-def move_right(node, goal_coord):
-    """Moves to the right node
-
-    Args:
-        node (NewNode): Node to move from
-        goal_coord (tuple): Coordinates of the goal node
-
-    Returns:
-        NewNode: Node after moving right
-        Float: Cost to move to the right node
-    """
-    x, y = node.coord
-    cost_to_go = calc_manhattan_distance(node.coord, goal_coord)
-
-    return NewNode((x + 1, y), node, cost_to_go, node.cost_to_come + 1), 1
+    return np.linalg.norm((current_coord[0] - goal_coord[0]) - (current_coord[1], goal_coord[1]))
 
 
 def move_forward(L, node, goal_coord):
@@ -291,14 +275,14 @@ def dijkstra(start, goal):
 
     # Create start node and add it to open list
     start_node = NewNode(start, None, calc_manhattan_distance(start, goal) ,0)
-    open_list.append((start_node, start_node.total_cost))
+    open_list.append(start_node)
     open_list_info[start_node.coord] = start_node
 
     while open_list:
 
         # Get the node with the minimum total cost and add to closed list
         open_list.sort(key=lambda x: x[1]) # sort open list based on total cost
-        node, _ = open_list.pop(0)
+        node = open_list.pop(0)
         cost_to_come = node.cost_to_come
         open_list_info.pop(node.coord)
         closed_list.append(node)
@@ -326,7 +310,7 @@ def dijkstra(start, goal):
                     child.cost_to_come = child_cost + cost_to_come
                     child.total_cost = child.cost_to_come + child.cost_to_go
                     child.parent = node
-                    open_list.append((child, child.total_cost))
+                    open_list.append(child)
                     open_list_info[child.coord] = child
 
                     explored_nodes.append(child.coord)
