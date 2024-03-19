@@ -1,10 +1,10 @@
 """
-dijkstra.py
+a_star_kshitij_abhishek.py
 
-@breif:     this module implements A-star algorithm for finding the shortest path in a graph.
-@author:    Kshitij Karnawat
-@date:      6th March 2024
-@version:   1.0
+@breif:     This module implements A-star algorithm for finding the shortest path in a graph.
+@author:    Kshitij Karnawat, Abhishekh Reddy
+@date:      19th March 2024
+@version:   2.0
 """
 
 import numpy as np
