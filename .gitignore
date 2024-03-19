@@ -1,3 +1,7 @@
+# Project 3 Visualization stuff
+*.png
+*.avi
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
