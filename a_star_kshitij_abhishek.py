@@ -387,9 +387,8 @@ def create_map():
 
     return game_map
 
-# @calculate_time
-def a_star(start, goal):
-    """Finds the shortest path from start to goal using A-Star algorithm
+def dijkstra(start, goal):
+    """Finds the shortest path from start to goal using Dijkstra's algorithm
 
     Args:
         start (tuple): Start coordinates
@@ -425,6 +424,7 @@ def a_star(start, goal):
         # Check if goal reached
         if node.coord == goal:
             path = backtrack_path(node)
+
             return explored_nodes, path
 
         else:
@@ -507,6 +507,7 @@ def vizualize(game_map, start, goal, path, explored_nodes):
     game_video.release()
 
 
+
 def main():
     game_map = create_map()
 
@@ -524,7 +525,7 @@ def main():
         return
 
     # find shortest path
-    explored_nodes, shortest_path = a_star(start_point, goal_point)
+    explored_nodes, shortest_path = dijkstra(start_point, goal_point)
     if shortest_path == None:
         print("No path found")
 
