@@ -28,6 +28,21 @@ class NewNode:
         self.cost_to_come = cost_to_come
         self.total_cost = cost_to_come + cost_to_go
 
+def calc_manhattan_distance(current_coord, goal_coord):
+    """Calculates manhattan distance between the current and goal nodes
+       for estimating cost to go
+
+    Args:
+        current_node_coord (tuple): Current node coordinate
+        goal_node_coord (tuple): Goal node coordinate
+
+    Returns:
+        Float: Manhattan distance which is cost to move to the goal node
+    """
+    x1, y1 = current_coord
+    x2, y2 = goal_coord
+
+    return abs(x2 - x1) + abs(y2 - y1)
     Args:
         node (NewNode): Node to move from
 
