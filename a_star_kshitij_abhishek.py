@@ -30,36 +30,60 @@ class NewNode:
         self.cost_to_come = cost_to_come
         self.total_cost = cost_to_come + cost_to_go
 
-def calc_manhattan_distance(current_coord, goal_coord):
-    """Calculates manhattan distance between the current and goal nodes
-       for estimating cost to go
-
-    Args:
-        current_node_coord (tuple): Current node coordinate
-        goal_node_coord (tuple): Goal node coordinate
+# Reused from Previous Assignment
+def create_map():
+    """Generates the game map
 
     Returns:
-        Float: Manhattan distance which is cost to move to the goal node
+        numpy array: A 2D array representing the game map
     """
+    # Create map
+    game_map = np.zeros((500, 1200, 3), dtype=np.uint8)
+    game_map.fill(255)
 
-    return np.linalg.norm((current_coord[0] - goal_coord[0]) - (current_coord[1], goal_coord[1]))
+    # Create obstacles
+    ### Refer https://docs.opencv.org/3.4/dc/da5/tutorial_py_drawing_functions.html on how to draw Polygons
 
+    # Define rectangle vertices
+    rectange_1 = np.array([[175, 100],
+                           [175, 500],
+                           [100, 500],
+                           [100, 100]], dtype=np.int32)
 
-def move_forward(L, node, goal_coord):
-    actionCost = L
-    x, y, theta = node.coord
+    rectangle_2 = np.array([[350, 0],
+                           [350, 400],
+                           [275, 400],
+                           [275, 0]], dtype=np.int32)
 
-    updated_x, updated_y = (x + (L * np.cos(np.deg2rad(0))), y + (L * np.sin(np.deg2rad(0))))
+    # Define hexagon vertices
+    side_length = 150
+    hexagon_center = (650, 250)
+    hexagon_vertices = []
+    for i in range(6):
+        angle_rad = np.deg2rad(90) + np.deg2rad(60 * i)  # Angle in radians for each vertex + 90 for rotating the hexagon
+        x = int(hexagon_center[0] + side_length * np.cos(angle_rad))
+        y = int(hexagon_center[1] - side_length * np.sin(angle_rad))
+        hexagon_vertices.append([x, y])
 
-    cost_to_go = calc_manhattan_distance((updated_x, updated_y), goal_coord)
+    hexagon = np.array(hexagon_vertices, dtype=np.int32)
 
-    child = NewNode((int(round(updated_x, 0)), int(round(updated_y, 0)), theta), node, node.cost_to_come + actionCost,
-                               node.cost_to_come + actionCost + cost_to_go)
+    # Define arch vertices
+    arch = np.array([[1100, 50],
+                     [1100, 450],
+                     [900, 450],
+                     [900, 375],
+                     [1020, 375],
+                     [1020, 125],
+                     [900, 125],
+                     [900,50]], dtype=np.int32)
 
-    return actionCost, cost_to_go, child
+    game_map = cv.fillPoly(game_map, [rectange_1, rectangle_2, hexagon, arch], (0, 0, 0))
 
+    game_map = cv.flip(game_map, 0)
 
+    return game_map
 
+# Reused from Previous Assignment
 def in_obstacles(coord):
     """Checks if the given coordinates are in obstacles
 
@@ -119,6 +143,36 @@ def in_obstacles(coord):
         # return True
 
     return False
+
+
+def calc_manhattan_distance(current_coord, goal_coord):
+    """Calculates manhattan distance between the current and goal nodes
+       for estimating cost to go
+
+    Args:
+        current_node_coord (tuple): Current node coordinate
+        goal_node_coord (tuple): Goal node coordinate
+
+    Returns:
+        Float: Manhattan distance which is cost to move to the goal node
+    """
+
+    return np.linalg.norm((current_coord[0] - goal_coord[0]) - (current_coord[1], goal_coord[1]))
+
+
+def move_forward(L, node, goal_coord):
+    actionCost = L
+    x, y, theta = node.coord
+
+    updated_x, updated_y = (x + (L * np.cos(np.deg2rad(0))), y + (L * np.sin(np.deg2rad(0))))
+
+    cost_to_go = calc_manhattan_distance((updated_x, updated_y), goal_coord)
+
+    child = NewNode((int(round(updated_x, 0)), int(round(updated_y, 0)), theta), node, node.cost_to_come + actionCost,
+                               node.cost_to_come + actionCost + cost_to_go)
+
+    return actionCost, cost_to_go, child
+
 
 # TODO: Modify as per the action space
 def get_child_nodes(node, goal_coord):
@@ -201,60 +255,10 @@ def get_child_nodes(node, goal_coord):
 
     return child_nodes
 
-def create_map():
-    """Generates the game map
-
-    Returns:
-        numpy array: A 2D array representing the game map
-    """
-    # Create map
-    game_map = np.zeros((500, 1200, 3), dtype=np.uint8)
-    game_map.fill(255)
-
-    # Create obstacles
-    ### Refer https://docs.opencv.org/3.4/dc/da5/tutorial_py_drawing_functions.html on how to draw Polygons
-
-    # Define rectangle vertices
-    rectange_1 = np.array([[175, 100],
-                           [175, 500],
-                           [100, 500],
-                           [100, 100]], dtype=np.int32)
-
-    rectangle_2 = np.array([[350, 0],
-                           [350, 400],
-                           [275, 400],
-                           [275, 0]], dtype=np.int32)
-
-    # Define hexagon vertices
-    side_length = 150
-    hexagon_center = (650, 250)
-    hexagon_vertices = []
-    for i in range(6):
-        angle_rad = np.deg2rad(90) + np.deg2rad(60 * i)  # Angle in radians for each vertex + 90 for rotating the hexagon
-        x = int(hexagon_center[0] + side_length * np.cos(angle_rad))
-        y = int(hexagon_center[1] - side_length * np.sin(angle_rad))
-        hexagon_vertices.append([x, y])
-
-    hexagon = np.array(hexagon_vertices, dtype=np.int32)
-
-    # Define arch vertices
-    arch = np.array([[1100, 50],
-                     [1100, 450],
-                     [900, 450],
-                     [900, 375],
-                     [1020, 375],
-                     [1020, 125],
-                     [900, 125],
-                     [900,50]], dtype=np.int32)
-
-    game_map = cv.fillPoly(game_map, [rectange_1, rectangle_2, hexagon, arch], (0, 0, 0))
-
-    game_map = cv.flip(game_map, 0)
-
-    return game_map
 
 
-def dijkstra(start, goal):
+
+def astar(start, goal):
     """Finds the shortest path from start to goal using Dijkstra's algorithm
 
     Args:
@@ -318,7 +322,6 @@ def dijkstra(start, goal):
     return explored_nodes, None
 
 # Reused from Previous Assignment
-# @calculate_time
 def backtrack_path(goal_node):
     """Backtracking algorithm for Dijkstra's algorithm
 
@@ -337,7 +340,6 @@ def backtrack_path(goal_node):
 
 # Reused from Previous Assignment
 # TODO: Modify if required
-# @calculate_time
 def vizualize(game_map, start, goal, path, explored_nodes):
     """Vizualizes the path and explored nodes
 
@@ -392,7 +394,7 @@ def main():
         return
 
     # find shortest path
-    explored_nodes, shortest_path = dijkstra(start_point, goal_point)
+    explored_nodes, shortest_path = astar(start_point, goal_point)
     if shortest_path == None:
         print("No path found")
 
