@@ -43,106 +43,134 @@ def calc_manhattan_distance(current_coord, goal_coord):
     x2, y2 = goal_coord
 
     return abs(x2 - x1) + abs(y2 - y1)
+
+def move_right(node, goal_coord):
+    """Moves to the right node
+
     Args:
         node (NewNode): Node to move from
+        goal_coord (tuple): Coordinates of the goal node
 
     Returns:
         NewNode: Node after moving right
         Float: Cost to move to the right node
     """
     x, y = node.coord
-    return NewNode((x + 1, y), node, node.cost + 1), 1
+    cost_to_go = calc_manhattan_distance(node.coord, goal_coord)
 
-def move_left(node):
-    """Moves tp the left node
+    return NewNode((x + 1, y), node, cost_to_go, node.cost_to_come + 1), 1
+
+def move_left(node, goal_coord):
+    """Moves to the left node
 
     Args:
         node (NewNode): Node to move from
+        goal_coord (tuple): Coordinates of the goal node
 
     Returns:
         NewNode: Node after moving left
         Float: Cost to move to the left node
     """
     x, y = node.coord
-    return NewNode((x - 1, y), node, node.cost + 1), 1
+    cost_to_go = calc_manhattan_distance(node.coord, goal_coord)
 
-def move_down(node):
-    """Moves tp the right down
+    return NewNode((x - 1, y), node, cost_to_go, node.cost_to_come + 1), 1
+
+def move_down(node, goal_coord):
+    """Moves to the right down
 
     Args:
         node (NewNode): Node to move from
+        goal_coord (tuple): Coordinates of the goal node
 
     Returns:
         NewNode: Node after moving down
         Float: Cost to move to the down node
     """
     x, y = node.coord
-    return NewNode((x, y - 1), node, node.cost + 1), 1
+    cost_to_go = calc_manhattan_distance(node.coord, goal_coord)
 
-def move_up(node):
-    """Moves tp the right up
+    return NewNode((x, y - 1), node, cost_to_go, node.cost_to_come + 1), 1
+
+def move_up(node, goal_coord):
+    """Moves to the right up
 
     Args:
         node (NewNode): Node to move from
+        goal_coord (tuple): Coordinates of the goal node
 
     Returns:
         NewNode: Node after moving up
         Float: Cost to move to the up node
     """
     x, y = node.coord
-    return NewNode((x, y + 1), node, node.cost + 1), 1
+    cost_to_go = calc_manhattan_distance(node.coord, goal_coord)
 
-def move_up_left(node):
-    """Moves tp the up and left diagonally node
+    return NewNode((x, y + 1), node, cost_to_go, node.cost_to_come + 1), 1
+
+def move_up_left(node, goal_coord):
+    """Moves to the up and left diagonally node
 
     Args:
         node (NewNode): Node to move from
+        goal_coord (tuple): Coordinates of the goal node
 
     Returns:
         NewNode: Node after moving up and left diagonally
         float: Cost to move to the up and left diagonally node
     """
     x, y = node.coord
-    return NewNode((x - 1, y + 1), node, node.cost + 1.4), 1.4
+    cost_to_go = calc_manhattan_distance(node.coord, goal_coord)
 
-def move_up_right(node):
-    """Moves tp the up and right diagonally node
+    return NewNode((x - 1, y + 1), node, cost_to_go, node.cost_to_come + 1.4), 1.4
+
+def move_up_right(node, goal_coord):
+    """Moves to the up and right diagonally node
 
     Args:
         node (NewNode): Node to move from
+        goal_coord (tuple): Coordinates of the goal node
 
     Returns:
         NewNode: Node after moving up and right diagonally
         float: Cost to move to the up and right diagonally node
     """
     x, y = node.coord
-    return NewNode((x + 1, y + 1), node, node.cost + 1.4), 1.4
+    cost_to_go = calc_manhattan_distance(node.coord, goal_coord)
 
-def move_down_left(node):
-    """Moves tp the down and left diagonally node
+    return NewNode((x + 1, y + 1), node, cost_to_go, node.cost_to_come + 1.4), 1.4
+
+def move_down_left(node, goal_coord):
+    """Moves to the down and left diagonally node
 
     Args:
         node (NewNode): Node to move from
+        goal_coord (tuple): Coordinates of the goal node
 
     Returns:
         NewNode: Node after moving down and left diagonally
         float: Cost to move to the down and left diagonally node
     """
     x, y = node.coord
-    return NewNode((x - 1, y - 1), node, node.cost + 1.4), 1.4
+    cost_to_go = calc_manhattan_distance(node.coord, goal_coord)
 
-def move_down_right(node):
-    """Moves tp the down and right diagonally node
+    return NewNode((x - 1, y - 1), node, cost_to_go, node.cost_to_come + 1.4), 1.4
+
+def move_down_right(node, goal_coord):
+    """Moves to the down and right diagonally node
 
     Args:
         node (NewNode): Node to move from
+        goal_coord (tuple): Coordinates of the goal node
 
     Returns:
         NewNode: Node after moving down and right diagonally
         float: Cost to move to the down and right diagonally node
     """
     x, y = node.coord
-    return NewNode((x + 1, y - 1), node, node.cost + 1.4), 1.4
+    cost_to_go = calc_manhattan_distance(node.coord, goal_coord)
+
+    return NewNode((x + 1, y - 1), node, cost_to_go, node.cost_to_come + 1.4), 1.4
 
 def in_obstacles(coord):
     """Checks if the given coordinates are in obstacles
@@ -204,18 +232,19 @@ def in_obstacles(coord):
 
     return False
 
-def get_child_nodes(node):
+def get_child_nodes(node, goal_coord):
     """Generates all possible child nodes for the given node
 
     Args:
         node (NewNode): Node to generate child nodes from
+        goal_coord (tuple): Coordinates of the goal node
 
     Returns:
         list: List of child nodes and their costs
     """
 
     # Set Max and Min values for x and y
-    x_max, y_max = 11200, 500
+    x_max, y_max = 1200, 500
     x_min, y_min = 0, 0
 
     # Get the coordinates of the node
@@ -226,56 +255,56 @@ def get_child_nodes(node):
 
     # Create all possible child nodes
     if x < x_max:
-        child, child_cost = move_up(node)
+        child, child_cost = move_up(node, goal_coord)
         if not in_obstacles(child.coord):
             child_nodes.append((child, child_cost))
         else:
             del child
 
     if x > x_min:
-        child, child_cost = move_down(node)
+        child, child_cost = move_down(node, goal_coord)
         if not in_obstacles(child.coord):
             child_nodes.append((child, child_cost))
         else:
             del child
 
     if y < y_max:
-        child, child_cost = move_right(node)
+        child, child_cost = move_right(node, goal_coord)
         if not in_obstacles(child.coord):
             child_nodes.append((child, child_cost))
         else:
             del child
 
     if y > y_min:
-        child, child_cost = move_left(node)
+        child, child_cost = move_left(node, goal_coord)
         if not in_obstacles(child.coord):
             child_nodes.append((child, child_cost))
         else:
             del child
 
     if x < x_max and y < y_max:
-        child, child_cost = move_up_right(node)
+        child, child_cost = move_up_right(node, goal_coord)
         if not in_obstacles(child.coord):
             child_nodes.append((child, child_cost))
         else:
             del child
 
     if x < x_max and y > y_min:
-        child, child_cost = move_up_left(node)
+        child, child_cost = move_up_left(node, goal_coord)
         if not in_obstacles(child.coord):
             child_nodes.append((child, child_cost))
         else:
             del child
 
     if x > x_min and y < y_max:
-        child, child_cost = move_down_right(node)
+        child, child_cost = move_down_right(node, goal_coord)
         if not in_obstacles(child.coord):
             child_nodes.append((child, child_cost))
         else:
             del child
 
     if x > x_min and y > y_min:
-        child, child_cost = move_down_left(node)
+        child, child_cost = move_down_left(node, goal_coord)
         if not in_obstacles(child.coord):
             child_nodes.append((child, child_cost))
         else:
