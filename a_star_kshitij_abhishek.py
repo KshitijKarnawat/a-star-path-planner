@@ -50,8 +50,24 @@ class NewNode:
         self.cost_to_come = cost_to_come
     
 # TODO: Redefine Action Space
-def get_child_nodes():
+def move_forward():
     pass
+
+def move_backward():
+    pass
+
+def move_left_small():
+    pass
+
+def move_right_small():
+    pass
+
+def move_right_big():
+    pass
+
+def move_left_big():
+    pass
+
 
 # Reused from Previous Assignment
 def create_map():
