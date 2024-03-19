@@ -10,6 +10,27 @@ dijkstra.py
 import numpy as np
 import cv2 as cv
 import time
+ 
+
+def calculate_time(func):
+    """Decorator to get function execution time
+
+    Args:
+        func(): Function whose time is to be calculated    
+    """     
+    def function_timer(*args, **kwargs):
+ 
+        # storing time before function execution
+        begin = time.time()
+         
+        func(*args, **kwargs)
+ 
+        # storing time after function execution
+        end = time.time()
+        print("Total time taken in : ", func.__name__, end - begin)
+ 
+    return function_timer
+ 
 
 class NewNode:
     """Class to represent a node in the graph
@@ -20,117 +41,72 @@ class NewNode:
         Args:
             coord (tuple): Coordinates of the node
             parent (NewNode): Parent node of the current node
-            cost (float): Cost to reach the current node
+            cost_to_go (float): Cost to reach the current node
+            cost_to_come (float): A-Star Hueristic for the current node (Eucledian Distance)
         """
         self.coord = coord
         self.parent = parent
         self.cost_to_go = cost_to_go
         self.cost_to_come = cost_to_come
     
-def move_right(node):
-    """Moves tp the right node
+# TODO: Redefine Action Space
+def get_child_nodes():
+    pass
 
-    Args:
-        node (NewNode): Node to move from
-
-    Returns:
-        NewNode: Node after moving right
-        Float: Cost to move to the right node
-    """
-    x, y = node.coord
-    return NewNode((x + 1, y), node, node.cost + 1), 1
-
-def move_left(node):
-    """Moves tp the left node
-
-    Args:
-        node (NewNode): Node to move from
+# Reused from Previous Assignment
+def create_map():
+    """Generates the game map
 
     Returns:
-        NewNode: Node after moving left
-        Float: Cost to move to the left node
+        numpy array: A 2D array representing the game map
     """
-    x, y = node.coord
-    return NewNode((x - 1, y), node, node.cost + 1), 1
+    # Create map
+    game_map = np.zeros((500, 1200, 3), dtype=np.uint8)
+    game_map.fill(255)
 
-def move_down(node):
-    """Moves tp the right down
+    # Create obstacles
+    ### Refer https://docs.opencv.org/3.4/dc/da5/tutorial_py_drawing_functions.html on how to draw Polygons
+    
+    # Define rectangle vertices
+    rectange_1 = np.array([[175, 100], 
+                           [175, 500], 
+                           [100, 500], 
+                           [100, 100]], dtype=np.int32)
 
-    Args:
-        node (NewNode): Node to move from
+    rectangle_2 = np.array([[350, 0], 
+                           [350, 400], 
+                           [275, 400], 
+                           [275, 0]], dtype=np.int32)
 
-    Returns:
-        NewNode: Node after moving down
-        Float: Cost to move to the down node
-    """
-    x, y = node.coord
-    return NewNode((x, y - 1), node, node.cost + 1), 1
+    # Define hexagon vertices
+    side_length = 150
+    hexagon_center = (650, 250)
+    hexagon_vertices = []
+    for i in range(6):
+        angle_rad = np.deg2rad(90) + np.deg2rad(60 * i)  # Angle in radians for each vertex + 90 for rotating the hexagon
+        x = int(hexagon_center[0] + side_length * np.cos(angle_rad))
+        y = int(hexagon_center[1] - side_length * np.sin(angle_rad))
+        hexagon_vertices.append([x, y])
 
-def move_up(node):
-    """Moves tp the right up
+    hexagon = np.array(hexagon_vertices, dtype=np.int32)
 
-    Args:
-        node (NewNode): Node to move from
+    # Define arch vertices
+    arch = np.array([[1100, 50],
+                     [1100, 450],
+                     [900, 450], 
+                     [900, 375],
+                     [1020, 375],
+                     [1020, 125],
+                     [900, 125],
+                     [900,50]], dtype=np.int32)
 
-    Returns:
-        NewNode: Node after moving up
-        Float: Cost to move to the up node
-    """
-    x, y = node.coord
-    return NewNode((x, y + 1), node, node.cost + 1), 1
+    game_map = cv.fillPoly(game_map, [rectange_1, rectangle_2, hexagon, arch], (0, 0, 0))
+    
+    game_map = cv.flip(game_map, 0)
 
-def move_up_left(node):
-    """Moves tp the up and left diagonally node
+    return game_map
 
-    Args:
-        node (NewNode): Node to move from
-
-    Returns:
-        NewNode: Node after moving up and left diagonally
-        float: Cost to move to the up and left diagonally node
-    """
-    x, y = node.coord
-    return NewNode((x - 1, y + 1), node, node.cost + 1.4), 1.4
-
-def move_up_right(node):
-    """Moves tp the up and right diagonally node
-
-    Args:
-        node (NewNode): Node to move from
-
-    Returns:
-        NewNode: Node after moving up and right diagonally
-        float: Cost to move to the up and right diagonally node
-    """
-    x, y = node.coord
-    return NewNode((x + 1, y + 1), node, node.cost + 1.4), 1.4
-
-def move_down_left(node):
-    """Moves tp the down and left diagonally node
-
-    Args:
-        node (NewNode): Node to move from
-
-    Returns:
-        NewNode: Node after moving down and left diagonally
-        float: Cost to move to the down and left diagonally node
-    """
-    x, y = node.coord
-    return NewNode((x - 1, y - 1), node, node.cost + 1.4), 1.4
-
-def move_down_right(node):
-    """Moves tp the down and right diagonally node
-
-    Args:
-        node (NewNode): Node to move from
-
-    Returns:
-        NewNode: Node after moving down and right diagonally
-        float: Cost to move to the down and right diagonally node
-    """
-    x, y = node.coord
-    return NewNode((x + 1, y - 1), node, node.cost + 1.4), 1.4
-
+# Reused from Previous Assignment
 def in_obstacles(coord):
     """Checks if the given coordinates are in obstacles
 
@@ -191,6 +167,7 @@ def in_obstacles(coord):
     
     return False
 
+# TODO: Modify as per the action space
 def get_child_nodes(node):
     """Generates all possible child nodes for the given node
 
@@ -270,58 +247,8 @@ def get_child_nodes(node):
 
     return child_nodes
 
-def create_map():
-    """Generates the game map
-
-    Returns:
-        numpy array: A 2D array representing the game map
-    """
-    # Create map
-    game_map = np.zeros((500, 1200, 3), dtype=np.uint8)
-    game_map.fill(255)
-
-    # Create obstacles
-    ### Refer https://docs.opencv.org/3.4/dc/da5/tutorial_py_drawing_functions.html on how to draw Polygons
-    
-    # Define rectangle vertices
-    rectange_1 = np.array([[175, 100], 
-                           [175, 500], 
-                           [100, 500], 
-                           [100, 100]], dtype=np.int32)
-
-    rectangle_2 = np.array([[350, 0], 
-                           [350, 400], 
-                           [275, 400], 
-                           [275, 0]], dtype=np.int32)
-
-    # Define hexagon vertices
-    side_length = 150
-    hexagon_center = (650, 250)
-    hexagon_vertices = []
-    for i in range(6):
-        angle_rad = np.deg2rad(90) + np.deg2rad(60 * i)  # Angle in radians for each vertex + 90 for rotating the hexagon
-        x = int(hexagon_center[0] + side_length * np.cos(angle_rad))
-        y = int(hexagon_center[1] - side_length * np.sin(angle_rad))
-        hexagon_vertices.append([x, y])
-
-    hexagon = np.array(hexagon_vertices, dtype=np.int32)
-
-    # Define arch vertices
-    arch = np.array([[1100, 50],
-                     [1100, 450],
-                     [900, 450], 
-                     [900, 375],
-                     [1020, 375],
-                     [1020, 125],
-                     [900, 125],
-                     [900,50]], dtype=np.int32)
-
-    game_map = cv.fillPoly(game_map, [rectange_1, rectangle_2, hexagon, arch], (0, 0, 0))
-    
-    game_map = cv.flip(game_map, 0)
-
-    return game_map
-
+# TODO: Change to A-Star
+@calculate_time
 def dijkstra(start, goal):
     """Finds the shortest path from start to goal using Dijkstra's algorithm
 
@@ -347,7 +274,6 @@ def dijkstra(start, goal):
     open_list.append((start_node, start_node.cost))
     open_list_info[start_node.coord] = start_node
 
-    start_time = time.time()
     while open_list:
 
         # Get the node with the minimum cost and add to closed list
@@ -359,11 +285,7 @@ def dijkstra(start, goal):
 
         # Check if goal reached
         if node.coord == goal:
-            path = backtrack_path(node)
-
-            end_time = time.time()
-            print("Time taken by Dijkstra: ", end_time - start_time, " seconds")
-            
+            path = backtrack_path(node)            
             return explored_nodes, path
         
         else:
@@ -385,10 +307,10 @@ def dijkstra(start, goal):
 
                     explored_nodes.append(child.coord)
 
-    end_time = time.time()
-    print("Time taken by Dijkstra: ", end_time - start_time, " seconds")
     return explored_nodes, None
 
+# Reused from Previous Assignment
+@calculate_time
 def backtrack_path(goal_node):
     """Backtracking algorithm for Dijkstra's algorithm
 
@@ -405,7 +327,10 @@ def backtrack_path(goal_node):
         parent = parent.parent
     return path[::-1]
 
-def vizualize_path(game_map, start, goal, path, explored_nodes):
+# Reused from Previous Assignment
+# TODO: Modify if required
+@calculate_time
+def vizualize(game_map, start, goal, path, explored_nodes):
     """Vizualizes the path and explored nodes
 
     Args:
@@ -415,7 +340,6 @@ def vizualize_path(game_map, start, goal, path, explored_nodes):
         path (list): A list of coordinates representing the shortest path
         explored_nodes (list): A list of explored nodes
     """
-    start_time = time.time()
     cv.circle(game_map, (start[0], game_map.shape[0] - start[1] - 1), 5, (0, 0, 255), -1)
     cv.circle(game_map, (goal[0], game_map.shape[0] - goal[1] - 1), 5, (0, 255, 0), -1)
 
@@ -429,9 +353,6 @@ def vizualize_path(game_map, start, goal, path, explored_nodes):
         if count == 100:
             game_video.write(game_map.astype(np.uint8))
             count = 0
-
-    mid_time = time.time()
-    print("Time taken to visualize explored nodes: ", mid_time - start_time, " seconds")
     
     for coord in path:
         # print(type(game_map))
@@ -443,32 +364,31 @@ def vizualize_path(game_map, start, goal, path, explored_nodes):
     cv.circle(game_map_copy, (goal[0], game_map.shape[0] - goal[1] - 1), 5, (0, 255, 0), 2)
     cv.imwrite('final_map.png', game_map_copy)
     game_video.release()
-    end_time = time.time()
-    print("Time taken to visualize path: ", end_time - mid_time, " seconds")
+
 
 def main():
     game_map = create_map()
     
     # get start and end points from user
-    start_point = (int(input("Enter x coordinate of start point: ")), int(input("Enter y coordinate of start point: ")))
-    goal_point = (int(input("Enter x coordinate of goal point: ")), int(input("Enter y coordinate of goal point: ")))
+    # start_point = (int(input("Enter x coordinate of start point: ")), int(input("Enter y coordinate of start point: ")))
+    # goal_point = (int(input("Enter x coordinate of goal point: ")), int(input("Enter y coordinate of goal point: ")))
 
     # Check if start and goal points are in obstacles
-    if in_obstacles(start_point):
-        print("Start point is in obstacle")
-        return 
+    # if in_obstacles(start_point):
+        # print("Start point is in obstacle")
+        # return 
     
-    if in_obstacles(goal_point):
-        print("Goal point is in obstacle")
-        return
+    # if in_obstacles(goal_point):
+        # print("Goal point is in obstacle")
+        # return
 
     # find shortest path
-    explored_nodes, shortest_path = dijkstra(start_point, goal_point)
-    if shortest_path == None:
-        print("No path found")
+    # explored_nodes, shortest_path = dijkstra(start_point, goal_point)
+    # if shortest_path == None:
+        # print("No path found")
     
     # visualize path
-    vizualize_path(game_map, start_point, goal_point, shortest_path, explored_nodes)
+    # vizualize_path(game_map, start_point, goal_point, shortest_path, explored_nodes)
 
     # show map
     cv.imshow('Map', game_map)
