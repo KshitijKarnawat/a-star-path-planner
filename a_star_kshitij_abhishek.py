@@ -387,6 +387,7 @@ def create_map():
 
     return game_map
 
+# @calculate_time
 def a_star(start, goal):
     """Finds the shortest path from start to goal using A-Star algorithm
 
@@ -450,6 +451,7 @@ def a_star(start, goal):
     return explored_nodes, None
 
 # Reused from Previous Assignment
+# @calculate_time
 def backtrack_path(goal_node):
     """Backtracking algorithm for Dijkstra's algorithm
 
@@ -468,6 +470,7 @@ def backtrack_path(goal_node):
 
 # Reused from Previous Assignment
 # TODO: Modify if required
+# @calculate_time
 def vizualize(game_map, start, goal, path, explored_nodes):
     """Vizualizes the path and explored nodes
 
