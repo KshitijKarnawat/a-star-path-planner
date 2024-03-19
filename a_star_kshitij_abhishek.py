@@ -26,7 +26,7 @@ class NewNode:
         self.parent = parent
         self.cost_to_go = cost_to_go
         self.cost_to_come = cost_to_come
-    
+
 def move_right(node):
     """Moves tp the right node
 
@@ -152,17 +152,17 @@ def in_obstacles(coord):
     if (x < x_min + bloat) or (x > x_max - bloat) or (y < y_min + bloat) or (y > y_max - bloat):
         # print("Out of bounds")
         return True
-    
+
     # Rectangle 1
     elif (x >= 100 - bloat and x <= 175 + bloat) and (y >= 100 - bloat and y <= 500):
         # print("In rectangle 1")
         return True
-    
+
     # Rectangle 2
     elif (x >= 275 - bloat and x <= 350 + bloat) and (y >= 0 and y <= 400 + bloat):
         # print("In rectangle 2")
         return True
-    
+
     # Hexagon
     elif (x >= 520 - bloat) and (x <= 780 + bloat) and ((x  + 1.7333 * y) <= 930 - (2 * bloat) + vertical_shift ) and ((x - 1.7333 * y) >= 370 + (2 * bloat) - vertical_shift) and ((x - 1.7333 * y) <= 930 + bloat - vertical_shift ) and ((x  + 1.7333 * y) >= 370 - bloat + vertical_shift):
         # print("In hexagon")
@@ -170,25 +170,25 @@ def in_obstacles(coord):
 
     # Arch
     # Divide the arch into 3 parts and check for each part
-    
+
     # Part 1
     elif (x >= 1020 - bloat and x <= 1100 + bloat) and (y >= 50 + bloat and y <= 450 - bloat):
         # print("In arch part 1")
         return True
-    
+
     # Part 2
     elif (x >= 900 - bloat and x <= 1100 + bloat) and (y >= 375 - bloat and y <= 450 + bloat):
         # print("In arch part 2")
         return True
-    
+
     # Part 3
     elif (x >= 900 - bloat and x <= 1100 + bloat) and (y >= 50 - bloat and y <= 125 + bloat):
         # print("In arch part 3")
         return True
-    
+
     # elif (x < 785 and):
         # return True
-    
+
     return False
 
 def get_child_nodes(node):
@@ -260,7 +260,7 @@ def get_child_nodes(node):
             child_nodes.append((child, child_cost))
         else:
             del child
-    
+
     if x > x_min and y > y_min:
         child, child_cost = move_down_left(node)
         if not in_obstacles(child.coord):
@@ -282,16 +282,16 @@ def create_map():
 
     # Create obstacles
     ### Refer https://docs.opencv.org/3.4/dc/da5/tutorial_py_drawing_functions.html on how to draw Polygons
-    
+
     # Define rectangle vertices
-    rectange_1 = np.array([[175, 100], 
-                           [175, 500], 
-                           [100, 500], 
+    rectange_1 = np.array([[175, 100],
+                           [175, 500],
+                           [100, 500],
                            [100, 100]], dtype=np.int32)
 
-    rectangle_2 = np.array([[350, 0], 
-                           [350, 400], 
-                           [275, 400], 
+    rectangle_2 = np.array([[350, 0],
+                           [350, 400],
+                           [275, 400],
                            [275, 0]], dtype=np.int32)
 
     # Define hexagon vertices
@@ -309,7 +309,7 @@ def create_map():
     # Define arch vertices
     arch = np.array([[1100, 50],
                      [1100, 450],
-                     [900, 450], 
+                     [900, 450],
                      [900, 375],
                      [1020, 375],
                      [1020, 125],
@@ -317,7 +317,7 @@ def create_map():
                      [900,50]], dtype=np.int32)
 
     game_map = cv.fillPoly(game_map, [rectange_1, rectangle_2, hexagon, arch], (0, 0, 0))
-    
+
     game_map = cv.flip(game_map, 0)
 
     return game_map
@@ -363,9 +363,9 @@ def dijkstra(start, goal):
 
             end_time = time.time()
             print("Time taken by Dijkstra: ", end_time - start_time, " seconds")
-            
+
             return explored_nodes, path
-        
+
         else:
             children = get_child_nodes(node)
             for child, child_cost in children:
@@ -432,7 +432,7 @@ def vizualize_path(game_map, start, goal, path, explored_nodes):
 
     mid_time = time.time()
     print("Time taken to visualize explored nodes: ", mid_time - start_time, " seconds")
-    
+
     for coord in path:
         # print(type(game_map))
         game_map[game_map.shape[0] - coord[1], coord[0]] = [0, 0, 0]
@@ -448,7 +448,7 @@ def vizualize_path(game_map, start, goal, path, explored_nodes):
 
 def main():
     game_map = create_map()
-    
+
     # get start and end points from user
     start_point = (int(input("Enter x coordinate of start point: ")), int(input("Enter y coordinate of start point: ")))
     goal_point = (int(input("Enter x coordinate of goal point: ")), int(input("Enter y coordinate of goal point: ")))
@@ -456,8 +456,8 @@ def main():
     # Check if start and goal points are in obstacles
     if in_obstacles(start_point):
         print("Start point is in obstacle")
-        return 
-    
+        return
+
     if in_obstacles(goal_point):
         print("Goal point is in obstacle")
         return
@@ -466,7 +466,7 @@ def main():
     explored_nodes, shortest_path = dijkstra(start_point, goal_point)
     if shortest_path == None:
         print("No path found")
-    
+
     # visualize path
     vizualize_path(game_map, start_point, goal_point, shortest_path, explored_nodes)
 
