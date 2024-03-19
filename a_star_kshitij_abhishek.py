@@ -12,26 +12,6 @@ import cv2 as cv
 import time
 
 
-def calculate_time(func):
-    """Decorator to get function execution time
-
-    Args:
-        func(): Function whose time is to be calculated
-    """
-    def function_timer(*args, **kwargs):
-
-        # storing time before function execution
-        begin = time.time()
-
-        func(*args, **kwargs)
-
-        # storing time after function execution
-        end = time.time()
-        print("Total time taken in : ", func.__name__, end - begin)
-
-    return function_timer
-
-
 class NewNode:
     """Class to represent a node in the graph
     """
@@ -39,7 +19,7 @@ class NewNode:
         """Initializes the node with its coordinates, parent and cost
 
         Args:
-            coord (tuple): Coordinates of the node
+            coord (tuple): Coordinates of the node along with the angle
             parent (NewNode): Parent node of the current node
             cost_to_go (float): Cost to reach the current node
             cost_to_come (float): A-Star Hueristic for the current node (Eucledian Distance)
@@ -61,10 +41,8 @@ def calc_manhattan_distance(current_coord, goal_coord):
     Returns:
         Float: Manhattan distance which is cost to move to the goal node
     """
-    x1, y1 = current_coord
-    x2, y2 = goal_coord
 
-    return abs(x2 - x1) + abs(y2 - y1)
+    return np.linalg.norm(np.asarray((current_coord[0], current_coord[1])) - np.asarray((goal_coord[0], goal_coord[1])))
 
 def move_right(node, goal_coord):
     """Moves to the right node
@@ -82,117 +60,21 @@ def move_right(node, goal_coord):
 
     return NewNode((x + 1, y), node, cost_to_go, node.cost_to_come + 1), 1
 
-def move_left(node, goal_coord):
-    """Moves to the left node
 
-    Args:
-        node (NewNode): Node to move from
-        goal_coord (tuple): Coordinates of the goal node
+def move_forward(L, node, goal_coord):
+    actionCost = L
+    x, y, theta = node.coord
 
-    Returns:
-        NewNode: Node after moving left
-        Float: Cost to move to the left node
-    """
-    x, y = node.coord
-    cost_to_go = calc_manhattan_distance(node.coord, goal_coord)
+    updated_x, updated_y = (x + (L * np.cos(np.deg2rad(0))), y + (L * np.sin(np.deg2rad(0))))
 
-    return NewNode((x - 1, y), node, cost_to_go, node.cost_to_come + 1), 1
+    cost_to_go = calc_manhattan_distance((updated_x, updated_y), goal_coord)
 
-def move_down(node, goal_coord):
-    """Moves to the right down
+    child = NewNode((int(round(updated_x, 0)), int(round(updated_y, 0)), theta), node, node.cost_to_come + actionCost,
+                               node.cost_to_come + actionCost + cost_to_go)
 
-    Args:
-        node (NewNode): Node to move from
-        goal_coord (tuple): Coordinates of the goal node
+    return actionCost, cost_to_go, child
 
-    Returns:
-        NewNode: Node after moving down
-        Float: Cost to move to the down node
-    """
-    x, y = node.coord
-    cost_to_go = calc_manhattan_distance(node.coord, goal_coord)
 
-    return NewNode((x, y - 1), node, cost_to_go, node.cost_to_come + 1), 1
-
-def move_up(node, goal_coord):
-    """Moves to the right up
-
-    Args:
-        node (NewNode): Node to move from
-        goal_coord (tuple): Coordinates of the goal node
-
-    Returns:
-        NewNode: Node after moving up
-        Float: Cost to move to the up node
-    """
-    x, y = node.coord
-    cost_to_go = calc_manhattan_distance(node.coord, goal_coord)
-
-    return NewNode((x, y + 1), node, cost_to_go, node.cost_to_come + 1), 1
-
-def move_up_left(node, goal_coord):
-    """Moves to the up and left diagonally node
-
-    Args:
-        node (NewNode): Node to move from
-        goal_coord (tuple): Coordinates of the goal node
-
-    Returns:
-        NewNode: Node after moving up and left diagonally
-        float: Cost to move to the up and left diagonally node
-    """
-    x, y = node.coord
-    cost_to_go = calc_manhattan_distance(node.coord, goal_coord)
-
-    return NewNode((x - 1, y + 1), node, cost_to_go, node.cost_to_come + 1.4), 1.4
-
-def move_up_right(node, goal_coord):
-    """Moves to the up and right diagonally node
-
-    Args:
-        node (NewNode): Node to move from
-        goal_coord (tuple): Coordinates of the goal node
-
-    Returns:
-        NewNode: Node after moving up and right diagonally
-        float: Cost to move to the up and right diagonally node
-    """
-    x, y = node.coord
-    cost_to_go = calc_manhattan_distance(node.coord, goal_coord)
-
-    return NewNode((x + 1, y + 1), node, cost_to_go, node.cost_to_come + 1.4), 1.4
-
-def move_down_left(node, goal_coord):
-    """Moves to the down and left diagonally node
-
-    Args:
-        node (NewNode): Node to move from
-        goal_coord (tuple): Coordinates of the goal node
-
-    Returns:
-        NewNode: Node after moving down and left diagonally
-        float: Cost to move to the down and left diagonally node
-    """
-    x, y = node.coord
-    cost_to_go = calc_manhattan_distance(node.coord, goal_coord)
-
-    return NewNode((x - 1, y - 1), node, cost_to_go, node.cost_to_come + 1.4), 1.4
-
-def move_down_right(node, goal_coord):
-    """Moves to the down and right diagonally node
-
-    Args:
-        node (NewNode): Node to move from
-        goal_coord (tuple): Coordinates of the goal node
-
-    Returns:
-        NewNode: Node after moving down and right diagonally
-        float: Cost to move to the down and right diagonally node
-    """
-    x, y = node.coord
-    cost_to_go = calc_manhattan_distance(node.coord, goal_coord)
-
-    return NewNode((x + 1, y - 1), node, cost_to_go, node.cost_to_come + 1.4), 1.4
 
 def in_obstacles(coord):
     """Checks if the given coordinates are in obstacles
@@ -386,6 +268,7 @@ def create_map():
     game_map = cv.flip(game_map, 0)
 
     return game_map
+
 
 def dijkstra(start, goal):
     """Finds the shortest path from start to goal using Dijkstra's algorithm
