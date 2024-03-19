@@ -26,9 +26,7 @@ class NewNode:
         self.parent = parent
         self.cost_to_go = cost_to_go
         self.cost_to_come = cost_to_come
-
-def move_right(node):
-    """Moves tp the right node
+        self.total_cost = cost_to_come + cost_to_go
 
     Args:
         node (NewNode): Node to move from
