@@ -15,7 +15,7 @@ import time
 class NewNode:
     """Class to represent a node in the graph
     """
-    def __init__(self, coord, parent, cost_, cost_to_goto_come):
+    def __init__(self, coord, parent, cost_to_go, cost_to_come):
         """Initializes the node with its coordinates, parent and cost
 
         Args:
@@ -97,7 +97,7 @@ def in_obstacles(coord):
     x_max, y_max = 1200, 500
     x_min, y_min = 0, 0
 
-    x, y = coord
+    x, y, theta = coord
 
     bloat = 5
     vertical_shift = 440 # needed as hexagon center is made on x = 0
@@ -157,7 +157,7 @@ def calc_manhattan_distance(current_coord, goal_coord):
         Float: Manhattan distance which is cost to move to the goal node
     """
 
-    return np.linalg.norm((current_coord[0] - goal_coord[0]) - (current_coord[1], goal_coord[1]))
+    return np.linalg.norm(np.asarray(current_coord)) - np.asarray((goal_coord[0], goal_coord[1]))
 
 
 def move_forward(L, node, goal_coord):
@@ -220,7 +220,6 @@ def big_right_turn(L, node, goal_coord):
 
     return child, cost_to_go
 
-# TODO: Modify as per the action space
 def get_child_nodes(L, node, goal_coord):
     """Generates all possible child nodes for the given node
 
@@ -232,13 +231,6 @@ def get_child_nodes(L, node, goal_coord):
         list: List of child nodes and their costs
     """
 
-    # Set Max and Min values for x and y
-    x_max, y_max = 1200, 500
-    x_min, y_min = 0, 0
-
-    # Get the coordinates of the node
-    x, y = node.coord
-
     # child nodes list
     child_nodes = []
 
@@ -249,7 +241,7 @@ def get_child_nodes(L, node, goal_coord):
     else:
         del child
 
-    child, child_cost = small_left_turn(node, goal_coord)
+    child, child_cost = small_left_turn(L, node, goal_coord)
     if not in_obstacles(child.coord):
         child_nodes.append((child, child_cost))
     else:
@@ -275,8 +267,7 @@ def get_child_nodes(L, node, goal_coord):
 
     return child_nodes
 
-
-def astar(start, goal):
+def astar(L, start, goal):
     """Finds the shortest path from start to goal using Dijkstra's algorithm
 
     Args:
@@ -297,14 +288,14 @@ def astar(start, goal):
 
     # Create start node and add it to open list
     start_node = NewNode(start, None, calc_manhattan_distance(start, goal) ,0)
-    open_list.append(start_node)
+    open_list.append((start_node, start_node.total_cost))
     open_list_info[start_node.coord] = start_node
 
     while open_list:
 
         # Get the node with the minimum total cost and add to closed list
         open_list.sort(key=lambda x: x[1]) # sort open list based on total cost
-        node = open_list.pop(0)
+        node, _ = open_list.pop(0)
         cost_to_come = node.cost_to_come
         open_list_info.pop(node.coord)
         closed_list.append(node)
@@ -317,7 +308,7 @@ def astar(start, goal):
             return explored_nodes, path
 
         else:
-            children = get_child_nodes(node, goal)
+            children = get_child_nodes(L, node, goal)
             for child, child_cost in children:
                 if child.coord in closed_list_info.keys():
                     del child
@@ -332,7 +323,7 @@ def astar(start, goal):
                     child.cost_to_come = child_cost + cost_to_come
                     child.total_cost = child.cost_to_come + child.cost_to_go
                     child.parent = node
-                    open_list.append(child)
+                    open_list.append((child, child.total_cost))
                     open_list_info[child.coord] = child
 
                     explored_nodes.append(child.coord)
@@ -393,15 +384,12 @@ def vizualize(game_map, start, goal, path, explored_nodes):
     cv.imwrite('final_map.png', game_map_copy)
     game_video.release()
 
-
-
 def main():
     game_map = create_map()
 
     # get start and end points from user
-    start_point = (int(input("Enter x coordinate of start point: ")), int(input("Enter y coordinate of start point: ")))
-    goal_point = (int(input("Enter x coordinate of goal point: ")), int(input("Enter y coordinate of goal point: ")))
-
+    start_point = (int(input("Enter x coordinate of start point: ")), int(input("Enter y coordinate of start point: ")), int(input("Enter the start angle of the robot in multiples of 30deg(0 <= theta <= 360): ")))
+    goal_point = (int(input("Enter x coordinate of goal point: ")), int(input("Enter y coordinate of goal point: ")), int(input("Enter the start angle of the robot in multiples of 30deg(0 <= theta <= 360): ")))
     L = int(input("Enter the step length of the robot (1 <= L <= 10): "))
 
     # Check if start and goal points are in obstacles
@@ -414,7 +402,7 @@ def main():
         return
 
     # find shortest path
-    explored_nodes, shortest_path = astar(start_point, goal_point)
+    explored_nodes, shortest_path = astar(L, start_point, goal_point)
     if shortest_path == None:
         print("No path found")
 
