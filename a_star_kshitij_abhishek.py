@@ -161,18 +161,64 @@ def calc_manhattan_distance(current_coord, goal_coord):
 
 
 def move_forward(L, node, goal_coord):
-    actionCost = L
     x, y, theta = node.coord
 
     updated_x, updated_y = (x + (L * np.cos(np.deg2rad(0))), y + (L * np.sin(np.deg2rad(0))))
 
     cost_to_go = calc_manhattan_distance((updated_x, updated_y), goal_coord)
 
-    child = NewNode((int(round(updated_x, 0)), int(round(updated_y, 0)), theta), node, node.cost_to_come + actionCost,
-                               node.cost_to_come + actionCost + cost_to_go)
+    child = NewNode((int(round(updated_x, 0)), int(round(updated_y, 0)), theta), node, node.cost_to_come + L,
+                               node.cost_to_come + L + cost_to_go)
 
-    return actionCost, cost_to_go, child
+    return cost_to_go, child
 
+def small_left_turn(L, node, goal_coord):
+    x, y, theta = node.coord
+
+    updated_x, updated_y = (x + (L * np.cos(np.deg2rad(30))), y + (L * np.sin(np.deg2rad(30))))
+
+    cost_to_go = calc_manhattan_distance((updated_x, updated_y), goal_coord)
+
+    child = NewNode((int(round(updated_x, 0)), int(round(updated_y, 0)), theta), node, node.cost_to_come + L,
+                               node.cost_to_come + L + cost_to_go)
+
+    return cost_to_go, child
+
+def small_right_turn(L, node, goal_coord):
+    x, y, theta = node.coord
+
+    updated_x, updated_y = (x + (L * np.cos(np.deg2rad(-30))), y + (L * np.sin(np.deg2rad(-30))))
+
+    cost_to_go = calc_manhattan_distance((updated_x, updated_y), goal_coord)
+
+    child = NewNode((int(round(updated_x, 0)), int(round(updated_y, 0)), theta), node, node.cost_to_come + L,
+                               node.cost_to_come + L + cost_to_go)
+
+    return cost_to_go, child
+
+def big_left_turn(L, node, goal_coord):
+    x, y, theta = node.coord
+
+    updated_x, updated_y = (x + (L * np.cos(np.deg2rad(60))), y + (L * np.sin(np.deg2rad(60))))
+
+    cost_to_go = calc_manhattan_distance((updated_x, updated_y), goal_coord)
+
+    child = NewNode((int(round(updated_x, 0)), int(round(updated_y, 0)), theta), node, node.cost_to_come + L,
+                               node.cost_to_come + L + cost_to_go)
+
+    return cost_to_go, child
+
+def big_right_turn(L, node, goal_coord):
+    x, y, theta = node.coord
+
+    updated_x, updated_y = (x + (L * np.cos(np.deg2rad(-60))), y + (L * np.sin(np.deg2rad(-60))))
+
+    cost_to_go = calc_manhattan_distance((updated_x, updated_y), goal_coord)
+
+    child = NewNode((int(round(updated_x, 0)), int(round(updated_y, 0)), theta), node, node.cost_to_come + L,
+                               node.cost_to_come + L + cost_to_go)
+
+    return cost_to_go, child
 
 # TODO: Modify as per the action space
 def get_child_nodes(node, goal_coord):
@@ -254,8 +300,6 @@ def get_child_nodes(node, goal_coord):
             del child
 
     return child_nodes
-
-
 
 
 def astar(start, goal):
