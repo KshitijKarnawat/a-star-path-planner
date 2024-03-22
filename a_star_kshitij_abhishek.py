@@ -15,7 +15,7 @@ import time
 class NewNode:
     """Class to represent a node in the graph
     """
-    def __init__(self, coord, parent, cost_to_go, cost_to_come):
+    def __init__(self, pose, parent, cost_to_go, cost_to_come):
         """Initializes the node with its coordinates, parent and cost
 
         Args:
@@ -24,7 +24,7 @@ class NewNode:
             cost_to_go (float): Cost to reach the current node
             cost_to_come (float): A-Star Hueristic for the current node (Eucledian Distance)
         """
-        self.coord = coord
+        self.pose = pose
         self.parent = parent
         self.cost_to_go = cost_to_go
         self.cost_to_come = cost_to_come
@@ -84,7 +84,7 @@ def create_map():
     return game_map
 
 # Reused from Previous Assignment
-def in_obstacles(coord):
+def in_obstacles(pose):
     """Checks if the given coordinates are in obstacles
 
     Args:
@@ -97,7 +97,7 @@ def in_obstacles(coord):
     x_max, y_max = 1200, 500
     x_min, y_min = 0, 0
 
-    x, y, theta = coord
+    x, y, heading = pose
 
     bloat = 5
     vertical_shift = 440 # needed as hexagon center is made on x = 0
@@ -144,9 +144,15 @@ def in_obstacles(coord):
 
     return False
 
+def near_goal(current_pose, goal_pose, threshold):
+    x1, y1, _ = current_pose
+    x2, y2, _ = goal_pose
 
-def calc_manhattan_distance(current_coord, goal_coord):
-    """Calculates manhattan distance between the current and goal nodes
+    return np.sqrt(pow(x2 - x1, 2) + pow(y2 - y1, 2)) <= threshold
+
+# TODO: Recheck cost to go heuristic function
+def calc_euclidian_distance(current_pose, goal_pose, L):
+    """Calculates euclidian distance between the current and goal nodes
        for estimating cost to go
 
     Args:
@@ -154,73 +160,74 @@ def calc_manhattan_distance(current_coord, goal_coord):
         goal_node_coord (tuple): Goal node coordinate
 
     Returns:
-        Float: Manhattan distance which is cost to move to the goal node
+        Float: Euclidian distance which is cost to move to the goal node
     """
+    x1, y1, heading1 = current_pose
+    x2, y2, heading2 = goal_pose
+    r1 = np.sqrt(pow(x1, 2) + pow(y1, 2))
+    r2 = np.sqrt(pow(x2, 2) + pow(y2, 2))
+    theta1 = (r1 / L) * np.tan(heading1)
+    theta2 = (r2 / L) * np.tan(heading2)
 
-    return np.linalg.norm(np.asarray(current_coord)) - np.asarray((goal_coord[0], goal_coord[1]))
+    return np.sqrt(pow(r1, 2) + pow(r2, 2) - 2 * r1 * r2 * np.cos(theta1 - theta2))
 
 
-def move_forward(L, node, goal_coord):
-    x, y, theta = node.coord
+def move_forward(L, node, goal_pose):
+    x, y, _ = node.pose
 
     updated_x, updated_y = (x + (L * np.cos(np.deg2rad(0))), y + (L * np.sin(np.deg2rad(0))))
 
-    cost_to_go = calc_manhattan_distance((updated_x, updated_y), goal_coord)
+    cost_to_go = calc_euclidian_distance((updated_x, updated_y, 0), goal_pose, L)
 
-    child = NewNode((int(round(updated_x, 0)), int(round(updated_y, 0)), theta), node, node.cost_to_come + L,
-                               node.cost_to_come + L + cost_to_go)
+    child = NewNode((int(round(updated_x, 0)), int(round(updated_y, 0)), 0), node, cost_to_go, node.cost_to_come + L)
 
-    return child, cost_to_go
+    return child, L
 
-def small_left_turn(L, node, goal_coord):
-    x, y, theta = node.coord
+def small_left_turn(L, node, goal_pose):
+    x, y, _ = node.pose
 
     updated_x, updated_y = (x + (L * np.cos(np.deg2rad(30))), y + (L * np.sin(np.deg2rad(30))))
 
-    cost_to_go = calc_manhattan_distance((updated_x, updated_y), goal_coord)
+    cost_to_go = calc_euclidian_distance((updated_x, updated_y, 30), goal_pose, L)
 
-    child = NewNode((int(round(updated_x, 0)), int(round(updated_y, 0)), theta), node, node.cost_to_come + L,
-                               node.cost_to_come + L + cost_to_go)
+    child = NewNode((int(round(updated_x, 0)), int(round(updated_y, 0)), 30), node, cost_to_go, node.cost_to_come + L)
 
-    return child, cost_to_go
+    return child, L
 
-def small_right_turn(L, node, goal_coord):
-    x, y, theta = node.coord
+def small_right_turn(L, node, goal_pose):
+    x, y, _ = node.pose
 
     updated_x, updated_y = (x + (L * np.cos(np.deg2rad(-30))), y + (L * np.sin(np.deg2rad(-30))))
 
-    cost_to_go = calc_manhattan_distance((updated_x, updated_y), goal_coord)
+    cost_to_go = calc_euclidian_distance((updated_x, updated_y, -30), goal_pose, L)
 
-    child = NewNode((int(round(updated_x, 0)), int(round(updated_y, 0)), theta), node, node.cost_to_come + L,
-                               node.cost_to_come + L + cost_to_go)
+    child = NewNode((int(round(updated_x, 0)), int(round(updated_y, 0)), -30), node, cost_to_go, node.cost_to_come + L)
 
-    return child, cost_to_go
+    return child, L
 
-def big_left_turn(L, node, goal_coord):
-    x, y, theta = node.coord
+def big_left_turn(L, node, goal_pose):
+    x, y, _ = node.pose
 
     updated_x, updated_y = (x + (L * np.cos(np.deg2rad(60))), y + (L * np.sin(np.deg2rad(60))))
 
-    cost_to_go = calc_manhattan_distance((updated_x, updated_y), goal_coord)
+    cost_to_go = calc_euclidian_distance((updated_x, updated_y, 60), goal_pose, L)
 
-    child = NewNode((int(round(updated_x, 0)), int(round(updated_y, 0)), theta), node, node.cost_to_come + L,
-                               node.cost_to_come + L + cost_to_go)
+    child = NewNode((int(round(updated_x, 0)), int(round(updated_y, 0)), 60), node, cost_to_go, node.cost_to_come + L)
 
-    return child, cost_to_go
+    return child, L
 
-def big_right_turn(L, node, goal_coord):
-    x, y, theta = node.coord
+def big_right_turn(L, node, goal_pose):
+    x, y, _ = node.pose
 
     updated_x, updated_y = (x + (L * np.cos(np.deg2rad(-60))), y + (L * np.sin(np.deg2rad(-60))))
 
-    cost_to_go = calc_manhattan_distance((updated_x, updated_y), goal_coord)
+    cost_to_go = calc_euclidian_distance((updated_x, updated_y, -60), goal_pose, L)
 
-    child = NewNode((int(round(updated_x, 0)), int(round(updated_y, 0)), theta), node, node.cost_to_come + L,
-                               node.cost_to_come + L + cost_to_go)
+    child = NewNode((int(round(updated_x, 0)), int(round(updated_y, 0)), -60), node, cost_to_go, node.cost_to_come + L)
 
-    return child, cost_to_go
+    return child, L
 
-def get_child_nodes(L, node, goal_coord):
+def get_child_nodes(L, node, goal_pose):
     """Generates all possible child nodes for the given node
 
     Args:
@@ -235,39 +242,39 @@ def get_child_nodes(L, node, goal_coord):
     child_nodes = []
 
     # Create all possible child nodes
-    child, child_cost = move_forward(L, node, goal_coord)
-    if not in_obstacles(child.coord):
+    child, child_cost = move_forward(L, node, goal_pose)
+    if not in_obstacles(child.pose):
         child_nodes.append((child, child_cost))
     else:
         del child
 
-    child, child_cost = small_left_turn(L, node, goal_coord)
-    if not in_obstacles(child.coord):
+    child, child_cost = small_left_turn(L, node, goal_pose)
+    if not in_obstacles(child.pose):
         child_nodes.append((child, child_cost))
     else:
         del child
 
-    child, child_cost = small_right_turn(L, node, goal_coord)
-    if not in_obstacles(child.coord):
+    child, child_cost = small_right_turn(L, node, goal_pose)
+    if not in_obstacles(child.pose):
         child_nodes.append((child, child_cost))
     else:
         del child
 
-    child, child_cost = big_left_turn(L, node, goal_coord)
-    if not in_obstacles(child.coord):
+    child, child_cost = big_left_turn(L, node, goal_pose)
+    if not in_obstacles(child.pose):
         child_nodes.append((child, child_cost))
     else:
         del child
 
-    child, child_cost = big_right_turn(L, node, goal_coord)
-    if not in_obstacles(child.coord):
+    child, child_cost = big_right_turn(L, node, goal_pose)
+    if not in_obstacles(child.pose):
         child_nodes.append((child, child_cost))
     else:
         del child
 
     return child_nodes
 
-def astar(L, start, goal):
+def astar(L, start_pose, goal_pose):
     """Finds the shortest path from start to goal using Dijkstra's algorithm
 
     Args:
@@ -287,46 +294,53 @@ def astar(L, start, goal):
     explored_nodes = []
 
     # Create start node and add it to open list
-    start_node = NewNode(start, None, calc_manhattan_distance(start, goal) ,0)
+    start_node = NewNode(start_pose, None, calc_euclidian_distance(start_pose, goal_pose, L), 0)
     open_list.append((start_node, start_node.total_cost))
-    open_list_info[start_node.coord] = start_node
+    open_list_info[start_node.pose] = start_node
 
     while open_list:
 
         # Get the node with the minimum total cost and add to closed list
         open_list.sort(key=lambda x: x[1]) # sort open list based on total cost
-        node, _ = open_list.pop(0)
-        cost_to_come = node.cost_to_come
-        open_list_info.pop(node.coord)
-        closed_list.append(node)
-        closed_list_info[node.coord] = node
+        current_node, _ = open_list.pop(0)
+        cost_to_come = current_node.cost_to_come
+        open_list_info.pop(current_node.pose)
+        closed_list.append(current_node)
+        closed_list_info[current_node.pose] = current_node
 
+        # # Debug print statements
+        # print("Exploring node: ", current_node.pose)
+        # print("Cost to come: ", current_node.cost_to_come)
+        # print("Cost to go: ", current_node.cost_to_go)
+        # print("Total cost: ", current_node.total_cost)
+        # print('\n')
+
+        # TODO: Implement goal threshold
         # Check if goal reached
-        if node.coord == goal:
-            path = backtrack_path(node)
-
+        if near_goal(current_node.pose, goal_pose, 1.5):
+            path = backtrack_path(current_node)
             return explored_nodes, path
 
         else:
-            children = get_child_nodes(L, node, goal)
+            children = get_child_nodes(L, current_node, goal_pose)
             for child, child_cost in children:
-                if child.coord in closed_list_info.keys():
+                if child.pose in closed_list_info.keys():
                     del child
                     continue
 
-                if child.coord in open_list_info.keys():
-                    if child_cost + cost_to_come < open_list_info[child.coord].cost_to_come:
-                        open_list_info[child.coord].cost_to_come = child_cost + cost_to_come
-                        open_list_info[child.coord].total_cost = open_list_info[child.coord].cost_to_come + open_list_info[child.coord].cost_to_go
-                        open_list_info[child.coord].parent = node
+                if child.pose in open_list_info.keys():
+                    if child_cost + cost_to_come < open_list_info[child.pose].cost_to_come:
+                        open_list_info[child.pose].cost_to_come = child_cost + cost_to_come
+                        open_list_info[child.pose].total_cost = open_list_info[child.pose].cost_to_come + open_list_info[child.pose].cost_to_go
+                        open_list_info[child.pose].parent = current_node
                 else:
                     child.cost_to_come = child_cost + cost_to_come
                     child.total_cost = child.cost_to_come + child.cost_to_go
-                    child.parent = node
+                    child.parent = current_node
                     open_list.append((child, child.total_cost))
-                    open_list_info[child.coord] = child
+                    open_list_info[child.pose] = child
 
-                    explored_nodes.append(child.coord)
+                    explored_nodes.append(child.pose)
 
     return explored_nodes, None
 
@@ -343,7 +357,7 @@ def backtrack_path(goal_node):
     path = []
     parent = goal_node
     while parent!= None:
-        path.append(parent.coord)
+        path.append((parent.pose[0], parent.pose[1]))
         parent = parent.parent
     return path[::-1]
 
@@ -365,18 +379,18 @@ def vizualize(game_map, start, goal, path, explored_nodes):
     game_video = cv.VideoWriter('game_vizualization.avi', cv.VideoWriter_fourcc('M','J','P','G'), 60, (1200, 500))
     game_map_copy = game_map.copy()
     count = 0
-    for coord in explored_nodes:
-        game_map[game_map.shape[0] - coord[1] - 1, coord[0]] = [100, 255, 100]
-        game_map_copy[game_map.shape[0] - coord[1] - 1, coord[0]] = [100, 255, 100]
+    for pose in explored_nodes:
+        game_map[game_map.shape[0] - pose[1] - 1, pose[0]] = [100, 255, 100]
+        game_map_copy[game_map.shape[0] - pose[1] - 1, pose[0]] = [100, 255, 100]
         count += 1
         if count == 100:
             game_video.write(game_map.astype(np.uint8))
             count = 0
 
-    for coord in path:
+    for pose in path:
         # print(type(game_map))
-        game_map[game_map.shape[0] - coord[1], coord[0]] = [0, 0, 0]
-        game_map_copy[game_map.shape[0] - coord[1], coord[0]] = [0, 0, 0]
+        game_map[game_map.shape[0] - pose[1], pose[0]] = [0, 0, 0]
+        game_map_copy[game_map.shape[0] - pose[1], pose[0]] = [0, 0, 0]
         game_video.write(game_map.astype(np.uint8))
 
     cv.circle(game_map_copy, (start[0], game_map.shape[0] - start[1] - 1), 5, (0, 0, 255), 2)

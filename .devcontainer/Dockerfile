@@ -5,6 +5,7 @@ ENV DEBIAN_FRONTEND=noninteractive
 RUN apt update && apt install -y -qq --no-install-recommends \
   wget \
   git \
+  gnupg \
   python3-pip \
   libxext-dev \
   libglvnd0 \
