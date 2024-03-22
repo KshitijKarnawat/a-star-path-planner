@@ -144,6 +144,11 @@ def in_obstacles(pose):
 
     return False
 
+def near_goal(current_pose, goal_pose, threshold):
+    x1, y1, _ = current_pose
+    x2, y2, _ = goal_pose
+
+    return np.sqrt(pow(x2 - x1, 2) + pow(y2 - y1, 2)) <= threshold
 
 def calc_manhattan_distance(current_coord, goal_coord):
     """Calculates manhattan distance between the current and goal nodes
