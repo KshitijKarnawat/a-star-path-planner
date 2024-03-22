@@ -172,67 +172,62 @@ def calc_euclidian_distance(current_pose, goal_pose, L):
     return np.sqrt(pow(r1, 2) + pow(r2, 2) - 2 * r1 * r2 * np.cos(theta1 - theta2))
 
 
-def move_forward(L, node, goal_coord):
-    x, y, theta = node.coord
+def move_forward(L, node, goal_pose):
+    x, y, _ = node.pose
 
     updated_x, updated_y = (x + (L * np.cos(np.deg2rad(0))), y + (L * np.sin(np.deg2rad(0))))
 
-    cost_to_go = calc_manhattan_distance((updated_x, updated_y), goal_coord)
+    cost_to_go = calc_euclidian_distance((updated_x, updated_y, 0), goal_pose, L)
 
-    child = NewNode((int(round(updated_x, 0)), int(round(updated_y, 0)), theta), node, node.cost_to_come + L,
-                               node.cost_to_come + L + cost_to_go)
+    child = NewNode((int(round(updated_x, 0)), int(round(updated_y, 0)), 0), node, cost_to_go, node.cost_to_come + L)
 
-    return child, cost_to_go
+    return child, L
 
-def small_left_turn(L, node, goal_coord):
-    x, y, theta = node.coord
+def small_left_turn(L, node, goal_pose):
+    x, y, _ = node.pose
 
     updated_x, updated_y = (x + (L * np.cos(np.deg2rad(30))), y + (L * np.sin(np.deg2rad(30))))
 
-    cost_to_go = calc_manhattan_distance((updated_x, updated_y), goal_coord)
+    cost_to_go = calc_euclidian_distance((updated_x, updated_y, 30), goal_pose, L)
 
-    child = NewNode((int(round(updated_x, 0)), int(round(updated_y, 0)), theta), node, node.cost_to_come + L,
-                               node.cost_to_come + L + cost_to_go)
+    child = NewNode((int(round(updated_x, 0)), int(round(updated_y, 0)), 30), node, cost_to_go, node.cost_to_come + L)
 
-    return child, cost_to_go
+    return child, L
 
-def small_right_turn(L, node, goal_coord):
-    x, y, theta = node.coord
+def small_right_turn(L, node, goal_pose):
+    x, y, _ = node.pose
 
     updated_x, updated_y = (x + (L * np.cos(np.deg2rad(-30))), y + (L * np.sin(np.deg2rad(-30))))
 
-    cost_to_go = calc_manhattan_distance((updated_x, updated_y), goal_coord)
+    cost_to_go = calc_euclidian_distance((updated_x, updated_y, -30), goal_pose, L)
 
-    child = NewNode((int(round(updated_x, 0)), int(round(updated_y, 0)), theta), node, node.cost_to_come + L,
-                               node.cost_to_come + L + cost_to_go)
+    child = NewNode((int(round(updated_x, 0)), int(round(updated_y, 0)), -30), node, cost_to_go, node.cost_to_come + L)
 
-    return child, cost_to_go
+    return child, L
 
-def big_left_turn(L, node, goal_coord):
-    x, y, theta = node.coord
+def big_left_turn(L, node, goal_pose):
+    x, y, _ = node.pose
 
     updated_x, updated_y = (x + (L * np.cos(np.deg2rad(60))), y + (L * np.sin(np.deg2rad(60))))
 
-    cost_to_go = calc_manhattan_distance((updated_x, updated_y), goal_coord)
+    cost_to_go = calc_euclidian_distance((updated_x, updated_y, 60), goal_pose, L)
 
-    child = NewNode((int(round(updated_x, 0)), int(round(updated_y, 0)), theta), node, node.cost_to_come + L,
-                               node.cost_to_come + L + cost_to_go)
+    child = NewNode((int(round(updated_x, 0)), int(round(updated_y, 0)), 60), node, cost_to_go, node.cost_to_come + L)
 
-    return child, cost_to_go
+    return child, L
 
-def big_right_turn(L, node, goal_coord):
-    x, y, theta = node.coord
+def big_right_turn(L, node, goal_pose):
+    x, y, _ = node.pose
 
     updated_x, updated_y = (x + (L * np.cos(np.deg2rad(-60))), y + (L * np.sin(np.deg2rad(-60))))
 
-    cost_to_go = calc_manhattan_distance((updated_x, updated_y), goal_coord)
+    cost_to_go = calc_euclidian_distance((updated_x, updated_y, -60), goal_pose, L)
 
-    child = NewNode((int(round(updated_x, 0)), int(round(updated_y, 0)), theta), node, node.cost_to_come + L,
-                               node.cost_to_come + L + cost_to_go)
+    child = NewNode((int(round(updated_x, 0)), int(round(updated_y, 0)), -60), node, cost_to_go, node.cost_to_come + L)
 
-    return child, cost_to_go
+    return child, L
 
-def get_child_nodes(L, node, goal_coord):
+def get_child_nodes(L, node, goal_pose):
     """Generates all possible child nodes for the given node
 
     Args:
@@ -247,32 +242,32 @@ def get_child_nodes(L, node, goal_coord):
     child_nodes = []
 
     # Create all possible child nodes
-    child, child_cost = move_forward(L, node, goal_coord)
-    if not in_obstacles(child.coord):
+    child, child_cost = move_forward(L, node, goal_pose)
+    if not in_obstacles(child.pose):
         child_nodes.append((child, child_cost))
     else:
         del child
 
-    child, child_cost = small_left_turn(L, node, goal_coord)
-    if not in_obstacles(child.coord):
+    child, child_cost = small_left_turn(L, node, goal_pose)
+    if not in_obstacles(child.pose):
         child_nodes.append((child, child_cost))
     else:
         del child
 
-    child, child_cost = small_right_turn(L, node, goal_coord)
-    if not in_obstacles(child.coord):
+    child, child_cost = small_right_turn(L, node, goal_pose)
+    if not in_obstacles(child.pose):
         child_nodes.append((child, child_cost))
     else:
         del child
 
-    child, child_cost = big_left_turn(L, node, goal_coord)
-    if not in_obstacles(child.coord):
+    child, child_cost = big_left_turn(L, node, goal_pose)
+    if not in_obstacles(child.pose):
         child_nodes.append((child, child_cost))
     else:
         del child
 
-    child, child_cost = big_right_turn(L, node, goal_coord)
-    if not in_obstacles(child.coord):
+    child, child_cost = big_right_turn(L, node, goal_pose)
+    if not in_obstacles(child.pose):
         child_nodes.append((child, child_cost))
     else:
         del child
