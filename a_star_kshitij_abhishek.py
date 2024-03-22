@@ -274,7 +274,7 @@ def get_child_nodes(L, node, goal_pose):
 
     return child_nodes
 
-def astar(L, start, goal):
+def astar(L, start_pose, goal_pose):
     """Finds the shortest path from start to goal using Dijkstra's algorithm
 
     Args:
@@ -294,46 +294,53 @@ def astar(L, start, goal):
     explored_nodes = []
 
     # Create start node and add it to open list
-    start_node = NewNode(start, None, calc_manhattan_distance(start, goal) ,0)
+    start_node = NewNode(start_pose, None, calc_euclidian_distance(start_pose, goal_pose, L), 0)
     open_list.append((start_node, start_node.total_cost))
-    open_list_info[start_node.coord] = start_node
+    open_list_info[start_node.pose] = start_node
 
     while open_list:
 
         # Get the node with the minimum total cost and add to closed list
         open_list.sort(key=lambda x: x[1]) # sort open list based on total cost
-        node, _ = open_list.pop(0)
-        cost_to_come = node.cost_to_come
-        open_list_info.pop(node.coord)
-        closed_list.append(node)
-        closed_list_info[node.coord] = node
+        current_node, _ = open_list.pop(0)
+        cost_to_come = current_node.cost_to_come
+        open_list_info.pop(current_node.pose)
+        closed_list.append(current_node)
+        closed_list_info[current_node.pose] = current_node
 
+        # # Debug print statements
+        # print("Exploring node: ", current_node.pose)
+        # print("Cost to come: ", current_node.cost_to_come)
+        # print("Cost to go: ", current_node.cost_to_go)
+        # print("Total cost: ", current_node.total_cost)
+        # print('\n')
+
+        # TODO: Implement goal threshold
         # Check if goal reached
-        if node.coord == goal:
-            path = backtrack_path(node)
-
+        if near_goal(current_node.pose, goal_pose, 1.5):
+            path = backtrack_path(current_node)
             return explored_nodes, path
 
         else:
-            children = get_child_nodes(L, node, goal)
+            children = get_child_nodes(L, current_node, goal_pose)
             for child, child_cost in children:
-                if child.coord in closed_list_info.keys():
+                if child.pose in closed_list_info.keys():
                     del child
                     continue
 
-                if child.coord in open_list_info.keys():
-                    if child_cost + cost_to_come < open_list_info[child.coord].cost_to_come:
-                        open_list_info[child.coord].cost_to_come = child_cost + cost_to_come
-                        open_list_info[child.coord].total_cost = open_list_info[child.coord].cost_to_come + open_list_info[child.coord].cost_to_go
-                        open_list_info[child.coord].parent = node
+                if child.pose in open_list_info.keys():
+                    if child_cost + cost_to_come < open_list_info[child.pose].cost_to_come:
+                        open_list_info[child.pose].cost_to_come = child_cost + cost_to_come
+                        open_list_info[child.pose].total_cost = open_list_info[child.pose].cost_to_come + open_list_info[child.pose].cost_to_go
+                        open_list_info[child.pose].parent = current_node
                 else:
                     child.cost_to_come = child_cost + cost_to_come
                     child.total_cost = child.cost_to_come + child.cost_to_go
-                    child.parent = node
+                    child.parent = current_node
                     open_list.append((child, child.total_cost))
-                    open_list_info[child.coord] = child
+                    open_list_info[child.pose] = child
 
-                    explored_nodes.append(child.coord)
+                    explored_nodes.append(child.pose)
 
     return explored_nodes, None
 
