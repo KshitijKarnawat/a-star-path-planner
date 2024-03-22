@@ -12,6 +12,7 @@
 		"--cap-add=SYS_PTRACE",
 		"--security-opt=seccomp:unconfined",
 		"--security-opt=apparmor:unconfined",
+        "--volume=${localEnv:HOME}/.gnupg:/home/project3-dev/.gnupg",   // Optional for signed git commits
 		"--volume=/tmp/.X11-unix:/tmp/.X11-unix",
 		"--volume=/run/user:/run/user",
 		"--ipc=host"
