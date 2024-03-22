@@ -84,7 +84,7 @@ def create_map():
     return game_map
 
 # Reused from Previous Assignment
-def in_obstacles(coord):
+def in_obstacles(pose):
     """Checks if the given coordinates are in obstacles
 
     Args:
@@ -97,7 +97,7 @@ def in_obstacles(coord):
     x_max, y_max = 1200, 500
     x_min, y_min = 0, 0
 
-    x, y, theta = coord
+    x, y, heading = pose
 
     bloat = 5
     vertical_shift = 440 # needed as hexagon center is made on x = 0
