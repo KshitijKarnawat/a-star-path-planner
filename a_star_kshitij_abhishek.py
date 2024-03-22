@@ -15,7 +15,7 @@ import time
 class NewNode:
     """Class to represent a node in the graph
     """
-    def __init__(self, coord, parent, cost_to_go, cost_to_come):
+    def __init__(self, pose, parent, cost_to_go, cost_to_come):
         """Initializes the node with its coordinates, parent and cost
 
         Args:
@@ -24,7 +24,7 @@ class NewNode:
             cost_to_go (float): Cost to reach the current node
             cost_to_come (float): A-Star Hueristic for the current node (Eucledian Distance)
         """
-        self.coord = coord
+        self.pose = pose
         self.parent = parent
         self.cost_to_go = cost_to_go
         self.cost_to_come = cost_to_come
