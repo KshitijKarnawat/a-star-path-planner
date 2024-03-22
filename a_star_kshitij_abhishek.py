@@ -357,7 +357,7 @@ def backtrack_path(goal_node):
     path = []
     parent = goal_node
     while parent!= None:
-        path.append(parent.coord)
+        path.append((parent.pose[0], parent.pose[1]))
         parent = parent.parent
     return path[::-1]
 
