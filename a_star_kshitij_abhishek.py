@@ -391,11 +391,12 @@ def vizualize(game_map, start, goal, path, explored_nodes):
             game_video.write(game_map.astype(np.uint8))
             count = 0
 
-    for pose in path:
-        # print(type(game_map))
-        game_map[game_map.shape[0] - pose[1], pose[0]] = [0, 0, 0]
-        game_map_copy[game_map.shape[0] - pose[1], pose[0]] = [0, 0, 0]
-        game_video.write(game_map.astype(np.uint8))
+    if path is not None:
+        for pose in path:
+            # print(type(game_map))
+            game_map[game_map.shape[0] - pose[1], pose[0]] = [0, 0, 0]
+            game_map_copy[game_map.shape[0] - pose[1], pose[0]] = [0, 0, 0]
+            game_video.write(game_map.astype(np.uint8))
 
     cv.circle(game_map_copy, (start[0], game_map.shape[0] - start[1] - 1), 5, (0, 0, 255), 2)
     cv.circle(game_map_copy, (goal[0], game_map.shape[0] - goal[1] - 1), 5, (0, 255, 0), 2)
