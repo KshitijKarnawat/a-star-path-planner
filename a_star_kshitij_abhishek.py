@@ -374,7 +374,7 @@ def vizualize(game_map, start, goal, path, explored_nodes):
     cv.circle(game_map, (start[0], game_map.shape[0] - start[1] - 1), 5, (0, 0, 255), -1)
     cv.circle(game_map, (goal[0], game_map.shape[0] - goal[1] - 1), 5, (0, 255, 0), -1)
 
-    game_video = cv.VideoWriter('game_vizualization.avi', cv.VideoWriter_fourcc('M','J','P','G'), 60, (1200, 500))
+    game_video = cv.VideoWriter('game_vizualization.avi', cv.VideoWriter_fourcc('M','J','P','G'), 60, (1200//2, 500//2))
     game_map_copy = game_map.copy()
     count = 0
     for pose in explored_nodes:
