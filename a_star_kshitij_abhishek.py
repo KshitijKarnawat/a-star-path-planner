@@ -161,12 +161,13 @@ def calc_euclidian_distance(current_pose, goal_pose, L):
     """
     x1, y1, heading1 = current_pose
     x2, y2, heading2 = goal_pose
-    r1 = np.sqrt(pow(x1, 2) + pow(y1, 2))
-    r2 = np.sqrt(pow(x2, 2) + pow(y2, 2))
-    theta1 = (r1 / L) * np.tan(heading1)
-    theta2 = (r2 / L) * np.tan(heading2)
+    # r1 = np.sqrt(pow(x1, 2) + pow(y1, 2))
+    # r2 = np.sqrt(pow(x2, 2) + pow(y2, 2))
+    # theta1 = (r1 / L) * np.tan(heading1)
+    # theta2 = (r2 / L) * np.tan(heading2)
 
-    return np.sqrt(pow(r1, 2) + pow(r2, 2) - 2 * r1 * r2 * np.cos(theta1 - theta2))
+    return np.sqrt(pow(x2 - x1, 2) + pow(y2 - y1, 2))
+    # return np.sqrt(pow(r1, 2) + pow(r2, 2) - 2 * r1 * r2 * np.cos(theta1 - theta2))
 
 
 def move_forward(L, node, goal_pose):
