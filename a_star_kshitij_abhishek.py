@@ -338,7 +338,7 @@ def astar(L, start_pose, goal_pose):
                     open_list.append((child, child.total_cost))
                     open_list_info[child.pose] = child
 
-                    explored_nodes.append(child.pose)
+                    explored_nodes.append(child)
 
     return explored_nodes, None
 
