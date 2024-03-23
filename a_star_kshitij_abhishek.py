@@ -377,9 +377,15 @@ def vizualize(game_map, start, goal, path, explored_nodes):
     game_video = cv.VideoWriter('game_vizualization.avi', cv.VideoWriter_fourcc('M','J','P','G'), 60, (1200//2, 500//2))
     game_map_copy = game_map.copy()
     count = 0
-    for pose in explored_nodes:
-        game_map[game_map.shape[0] - pose[1] - 1, pose[0]] = [100, 255, 100]
-        game_map_copy[game_map.shape[0] - pose[1] - 1, pose[0]] = [100, 255, 100]
+    for node in explored_nodes:
+        # game_map[game_map.shape[0] - pose[1] - 1, pose[0]] = [100, 255, 100]
+        # game_map_copy[game_map.shape[0] - pose[1] - 1, pose[0]] = [100, 255, 100]
+
+        # TODO: Write statements to display arrow lines using cv2
+        #       Point 1 would be the parent node coordinates, Point 2 will be the node coordinates.
+        cv.arrowedLine(game_map, (node.parent.pose[0], game_map.shape[0] - node.parent.pose[1] - 1), (node.pose[0], game_map.shape[0] - node.pose[1] - 1), [100, 255, 100], 1, tipLength=0.5)
+        cv.arrowedLine(game_map_copy, (node.parent.pose[0], game_map.shape[0] - node.parent.pose[1] - 1), (node.pose[0], game_map.shape[0] - node.pose[1] - 1), [100, 255, 100], 1, tipLength=0.5)
+
         count += 1
         if count == 100:
             game_video.write(game_map.astype(np.uint8))
