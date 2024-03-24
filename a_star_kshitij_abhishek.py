@@ -320,7 +320,7 @@ def astar(L, start_pose, goal_pose, clearance):
 
         # TODO: Implement goal threshold
         # Check if goal reached
-        if near_goal(current_node.pose, goal_pose, 1.5):
+        if near_goal(current_node.pose, goal_pose, L // 2):
             path = backtrack_path(current_node)
             return explored_nodes, path
 
