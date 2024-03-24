@@ -161,12 +161,13 @@ def calc_euclidian_distance(current_pose, goal_pose, L):
     """
     x1, y1, heading1 = current_pose
     x2, y2, heading2 = goal_pose
-    r1 = np.sqrt(pow(x1, 2) + pow(y1, 2))
-    r2 = np.sqrt(pow(x2, 2) + pow(y2, 2))
-    theta1 = (r1 / L) * np.tan(heading1)
-    theta2 = (r2 / L) * np.tan(heading2)
+    # r1 = np.sqrt(pow(x1, 2) + pow(y1, 2))
+    # r2 = np.sqrt(pow(x2, 2) + pow(y2, 2))
+    # theta1 = (r1 / L) * np.tan(heading1)
+    # theta2 = (r2 / L) * np.tan(heading2)
 
-    return np.sqrt(pow(r1, 2) + pow(r2, 2) - 2 * r1 * r2 * np.cos(theta1 - theta2))
+    return np.sqrt(pow(x2 - x1, 2) + pow(y2 - y1, 2))
+    # return np.sqrt(pow(r1, 2) + pow(r2, 2) - 2 * r1 * r2 * np.cos(theta1 - theta2))
 
 
 def move_forward(L, node, goal_pose):
@@ -337,7 +338,7 @@ def astar(L, start_pose, goal_pose):
                     open_list.append((child, child.total_cost))
                     open_list_info[child.pose] = child
 
-                    explored_nodes.append(child.pose)
+                    explored_nodes.append(child)
 
     return explored_nodes, None
 
@@ -373,22 +374,29 @@ def vizualize(game_map, start, goal, path, explored_nodes):
     cv.circle(game_map, (start[0], game_map.shape[0] - start[1] - 1), 5, (0, 0, 255), -1)
     cv.circle(game_map, (goal[0], game_map.shape[0] - goal[1] - 1), 5, (0, 255, 0), -1)
 
-    game_video = cv.VideoWriter('game_vizualization.avi', cv.VideoWriter_fourcc('M','J','P','G'), 60, (1200, 500))
+    game_video = cv.VideoWriter('game_vizualization.avi', cv.VideoWriter_fourcc('M','J','P','G'), 60, (1200//2, 500//2))
     game_map_copy = game_map.copy()
     count = 0
-    for pose in explored_nodes:
-        game_map[game_map.shape[0] - pose[1] - 1, pose[0]] = [100, 255, 100]
-        game_map_copy[game_map.shape[0] - pose[1] - 1, pose[0]] = [100, 255, 100]
+    for node in explored_nodes:
+        # game_map[game_map.shape[0] - pose[1] - 1, pose[0]] = [100, 255, 100]
+        # game_map_copy[game_map.shape[0] - pose[1] - 1, pose[0]] = [100, 255, 100]
+
+        # TODO: Write statements to display arrow lines using cv2
+        #       Point 1 would be the parent node coordinates, Point 2 will be the node coordinates.
+        cv.arrowedLine(game_map, (node.parent.pose[0], game_map.shape[0] - node.parent.pose[1] - 1), (node.pose[0], game_map.shape[0] - node.pose[1] - 1), [100, 255, 100], 1, tipLength=0.5)
+        cv.arrowedLine(game_map_copy, (node.parent.pose[0], game_map.shape[0] - node.parent.pose[1] - 1), (node.pose[0], game_map.shape[0] - node.pose[1] - 1), [100, 255, 100], 1, tipLength=0.5)
+
         count += 1
         if count == 100:
             game_video.write(game_map.astype(np.uint8))
             count = 0
 
-    for pose in path:
-        # print(type(game_map))
-        game_map[game_map.shape[0] - pose[1], pose[0]] = [0, 0, 0]
-        game_map_copy[game_map.shape[0] - pose[1], pose[0]] = [0, 0, 0]
-        game_video.write(game_map.astype(np.uint8))
+    if path is not None:
+        for pose in path:
+            # print(type(game_map))
+            game_map[game_map.shape[0] - pose[1], pose[0]] = [0, 0, 0]
+            game_map_copy[game_map.shape[0] - pose[1], pose[0]] = [0, 0, 0]
+            game_video.write(game_map.astype(np.uint8))
 
     cv.circle(game_map_copy, (start[0], game_map.shape[0] - start[1] - 1), 5, (0, 0, 255), 2)
     cv.circle(game_map_copy, (goal[0], game_map.shape[0] - goal[1] - 1), 5, (0, 255, 0), 2)
