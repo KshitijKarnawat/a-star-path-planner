@@ -337,8 +337,6 @@ def astar(L, start_pose, goal_pose, clearance):
                         open_list_info[child.pose].total_cost = open_list_info[child.pose].cost_to_come + open_list_info[child.pose].cost_to_go
                         open_list_info[child.pose].parent = current_node
                 else:
-                    child.cost_to_come = child_cost + cost_to_come
-                    child.total_cost = child.cost_to_come + child.cost_to_go
                     child.parent = current_node
                     open_list.append((child, child.total_cost))
                     open_list_info[child.pose] = child
