@@ -84,7 +84,7 @@ def create_map():
     return game_map
 
 # Reused from Previous Assignment
-def in_obstacles(pose):
+def in_obstacles(pose, clearance):
     """Checks if the given coordinates are in obstacles
 
     Args:
@@ -99,7 +99,7 @@ def in_obstacles(pose):
 
     x, y, heading = pose
 
-    bloat = 5
+    bloat = clearance
     vertical_shift = 448//2 # needed as hexagon center is made on x = 0
 
     if (x < x_min + bloat) or (x > x_max - bloat) or (y < y_min + bloat) or (y > y_max - bloat):
@@ -225,7 +225,7 @@ def big_right_turn(L, node, goal_pose):
 
     return child, L
 
-def get_child_nodes(L, node, goal_pose):
+def get_child_nodes(L, node, goal_pose, clearance):
     """Generates all possible child nodes for the given node
 
     Args:
@@ -241,38 +241,43 @@ def get_child_nodes(L, node, goal_pose):
 
     # Create all possible child nodes
     child, child_cost = move_forward(L, node, goal_pose)
-    if not in_obstacles(child.pose):
+    if not in_obstacles(child.pose, clearance):
         child_nodes.append((child, child_cost))
     else:
+        print("Child detected in obstacle space, not generating this node")
         del child
 
     child, child_cost = small_left_turn(L, node, goal_pose)
-    if not in_obstacles(child.pose):
+    if not in_obstacles(child.pose, clearance):
         child_nodes.append((child, child_cost))
     else:
+        print("Child detected in obstacle space, not generating this node")
         del child
 
     child, child_cost = small_right_turn(L, node, goal_pose)
-    if not in_obstacles(child.pose):
+    if not in_obstacles(child.pose, clearance):
         child_nodes.append((child, child_cost))
     else:
+        print("Child detected in obstacle space, not generating this node")
         del child
 
     child, child_cost = big_left_turn(L, node, goal_pose)
-    if not in_obstacles(child.pose):
+    if not in_obstacles(child.pose, clearance):
         child_nodes.append((child, child_cost))
     else:
+        print("Child detected in obstacle space, not generating this node")
         del child
 
     child, child_cost = big_right_turn(L, node, goal_pose)
-    if not in_obstacles(child.pose):
+    if not in_obstacles(child.pose, clearance):
         child_nodes.append((child, child_cost))
     else:
+        print("Child detected in obstacle space, not generating this node")
         del child
 
     return child_nodes
 
-def astar(L, start_pose, goal_pose):
+def astar(L, start_pose, goal_pose, clearance):
     """Finds the shortest path from start to goal using Dijkstra's algorithm
 
     Args:
@@ -315,12 +320,12 @@ def astar(L, start_pose, goal_pose):
 
         # TODO: Implement goal threshold
         # Check if goal reached
-        if near_goal(current_node.pose, goal_pose, 1.5):
+        if near_goal(current_node.pose, goal_pose, L // 2):
             path = backtrack_path(current_node)
             return explored_nodes, path
 
         else:
-            children = get_child_nodes(L, current_node, goal_pose)
+            children = get_child_nodes(L, current_node, goal_pose, clearance)
             for child, child_cost in children:
                 if child.pose in closed_list_info.keys():
                     del child
@@ -332,8 +337,6 @@ def astar(L, start_pose, goal_pose):
                         open_list_info[child.pose].total_cost = open_list_info[child.pose].cost_to_come + open_list_info[child.pose].cost_to_go
                         open_list_info[child.pose].parent = current_node
                 else:
-                    child.cost_to_come = child_cost + cost_to_come
-                    child.total_cost = child.cost_to_come + child.cost_to_go
                     child.parent = current_node
                     open_list.append((child, child.total_cost))
                     open_list_info[child.pose] = child
@@ -407,21 +410,27 @@ def main():
     game_map = create_map()
 
     # get start and end points from user
-    start_point = (int(input("Enter x coordinate of start point: ")), int(input("Enter y coordinate of start point: ")), int(input("Enter the start angle of the robot in multiples of 30deg(0 <= theta <= 360): ")))
-    goal_point = (int(input("Enter x coordinate of goal point: ")), int(input("Enter y coordinate of goal point: ")), int(input("Enter the start angle of the robot in multiples of 30deg(0 <= theta <= 360): ")))
+    start_point_input = (int(input("Enter x coordinate of start point: ")), int(input("Enter y coordinate of start point: ")), int(input("Enter the start angle of the robot in multiples of 30deg(0 <= theta <= 360): ")))
+    goal_point_input = (int(input("Enter x coordinate of goal point: ")), int(input("Enter y coordinate of goal point: ")), int(input("Enter the start angle of the robot in multiples of 30deg(0 <= theta <= 360): ")))
+    clearance_input = int(input("Enter the clearance for robot: "))
     L = int(input("Enter the step length of the robot (1 <= L <= 10): "))
 
+    # Convert input 1200x500 space to 600x250 space
+    start_point = (int(np.interp(start_point_input[0], [0, 1200], [0, 1200//2])), int(np.interp(start_point_input[1], [0, 500], [0, 500//2])), start_point_input[2])
+    goal_point = (int(np.interp(goal_point_input[0], [0, 1200], [0, 1200//2])), int(np.interp(goal_point_input[1], [0, 500], [0, 500//2])), goal_point_input[2])
+    clearance = int(clearance_input // 2)
+
     # Check if start and goal points are in obstacles
-    if in_obstacles(start_point):
+    if in_obstacles(start_point, clearance):
         print("Start point is in obstacle")
         return
 
-    if in_obstacles(goal_point):
+    if in_obstacles(goal_point, clearance):
         print("Goal point is in obstacle")
         return
 
     # find shortest path
-    explored_nodes, shortest_path = astar(L, start_point, goal_point)
+    explored_nodes, shortest_path = astar(L, start_point, goal_point, clearance)
     if shortest_path == None:
         print("No path found")
 
