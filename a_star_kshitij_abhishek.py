@@ -407,9 +407,9 @@ def main():
     game_map = create_map()
 
     # get start and end points from user
-    start_point = (int(input("Enter x coordinate of start point: ")), int(input("Enter y coordinate of start point: ")), int(input("Enter the start angle of the robot in multiples of 30deg(0 <= theta <= 360): ")))
-    goal_point = (int(input("Enter x coordinate of goal point: ")), int(input("Enter y coordinate of goal point: ")), int(input("Enter the start angle of the robot in multiples of 30deg(0 <= theta <= 360): ")))
+    clearance_input = int(input("Enter the clearance for robot: "))
     L = int(input("Enter the step length of the robot (1 <= L <= 10): "))
+    clearance = int(clearance_input // 2)
 
     # Check if start and goal points are in obstacles
     if in_obstacles(start_point):
