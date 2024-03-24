@@ -100,7 +100,7 @@ def in_obstacles(pose):
     x, y, heading = pose
 
     bloat = 5
-    vertical_shift = 440//2 # needed as hexagon center is made on x = 0
+    vertical_shift = 448//2 # needed as hexagon center is made on x = 0
 
     if (x < x_min + bloat) or (x > x_max - bloat) or (y < y_min + bloat) or (y > y_max - bloat):
         # print("Out of bounds")
