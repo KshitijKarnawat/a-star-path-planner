@@ -392,9 +392,9 @@ def main():
 
     # get start and end points from user
     start_point_input = (int(input("Enter x coordinate of start point: ")), int(input("Enter y coordinate of start point: ")), int(input("Enter the start angle of the robot in multiples of 30deg(0 <= theta <= 360): ")))
-    goal_point_input = (int(input("Enter x coordinate of goal point: ")), int(input("Enter y coordinate of goal point: ")), int(input("Enter the start angle of the robot in multiples of 30deg(0 <= theta <= 360): ")))
+    goal_point_input = (int(input("Enter x coordinate of goal point: ")), int(input("Enter y coordinate of goal point: ")), int(input("Enter the goal angle of the robot in multiples of 30deg(0 <= theta <= 360): ")))
     clearance_input = int(input("Enter the clearance for robot: "))
-    robot_radius = int(input("Robot Radius: "))
+    robot_radius = int(input("Enter robot radius: "))
     L = int(input("Enter the step length of the robot (1 <= L <= 10): "))
 
     # Convert input 1200x500 space to 600x250 space
