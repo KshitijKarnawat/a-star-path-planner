@@ -22,6 +22,7 @@ Enter x coordinate of goal point: 950
 Enter y coordinate of goal point: 250
 Enter the clearnance of the robot: 2
 Enter the radius of the robot: 2
+Enter the step size: 1
 ```
 
 The code will generate a visualization of the path planning process and the final path. The visualization will be saved as a video in the current directory along with the final path as an image.
@@ -37,14 +38,16 @@ Starting Coordinates = 10, 400, 0
 
 Goal Coordinates = 1180, 10, 30
 
-Step Size = 10
-
 Clearance = 2
 
 Radius = 2
+
+Step Size = 10
 ```
 
-<!-- ![Dijkstra Path Planner](TEST1/game_vizualization.gif) -->
+Time Taken: 512 seconds
+
+![A-Star Path Planner](test_case1.gif)
 
 ### Test Case 2
 
@@ -53,14 +56,16 @@ Starting Coordinates = 250, 50, 30
 
 Goal Coordinates = 950, 250, 60
 
-Step Size = 5
-
 Clearance = 2
 
 Radius = 2
+
+Step Size = 5
 ```
 
-<!-- ![Dijkstra Path Planner](TEST2/game_vizualization.gif) -->
+Time Taken: 240 seconds
+
+![A-Star Path Planner](test_case2.gif)
 
 ### Test Case 3
 
@@ -69,11 +74,13 @@ Starting Coordinates = 1180, 250, 0
 
 Goal Coordinates = 950, 250, 180
 
-Step Size = 1
-
 Clearance = 2
 
 Radius = 2
+
+Step Size = 1
 ```
 
-<!-- ![Dijkstra Path Planner](TEST3/game_vizualization.gif) -->
+Time Taken: 13 seconds
+
+![A-Star Path Planner](test_case3.gif)
