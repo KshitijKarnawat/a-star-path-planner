@@ -148,7 +148,7 @@ def near_goal(current_pose, goal_pose, threshold):
     return np.sqrt(pow(x2 - x1, 2) + pow(y2 - y1, 2)) <= threshold
 
 # TODO: Recheck cost to go heuristic function
-def calc_euclidian_distance(current_pose, goal_pose, L):
+def calc_euclidian_distance(current_pose, goal_pose):
     """Calculates euclidian distance between the current and goal nodes
        for estimating cost to go
 
@@ -175,7 +175,7 @@ def move_forward(L, node, goal_pose):
 
     updated_x, updated_y = (x + (L * np.cos(np.deg2rad(heading))), y + (L * np.sin(np.deg2rad(heading))))
 
-    cost_to_go = calc_euclidian_distance((updated_x, updated_y, 0), goal_pose, L)
+    cost_to_go = calc_euclidian_distance((updated_x, updated_y, heading), goal_pose)
 
     child = NewNode((int(round(updated_x, 0)), int(round(updated_y, 0)), heading), node, cost_to_go, node.cost_to_come + L)
 
@@ -187,7 +187,7 @@ def small_left_turn(L, node, goal_pose):
     updated_heading = (heading + 30) % 360
     updated_x, updated_y = (x + (L * np.cos(np.deg2rad(updated_heading))), y + (L * np.sin(np.deg2rad(updated_heading))))
 
-    cost_to_go = calc_euclidian_distance((updated_x, updated_y, 30), goal_pose, L)
+    cost_to_go = calc_euclidian_distance((updated_x, updated_y, updated_heading), goal_pose)
 
     child = NewNode((int(round(updated_x, 0)), int(round(updated_y, 0)), updated_heading), node, cost_to_go, node.cost_to_come + L)
 
@@ -199,7 +199,7 @@ def small_right_turn(L, node, goal_pose):
     updated_heading = (heading - 30) % 360
     updated_x, updated_y = (x + (L * np.cos(np.deg2rad(updated_heading))), y + (L * np.sin(np.deg2rad(updated_heading))))
 
-    cost_to_go = calc_euclidian_distance((updated_x, updated_y, -30), goal_pose, L)
+    cost_to_go = calc_euclidian_distance((updated_x, updated_y, updated_heading), goal_pose)
 
     child = NewNode((int(round(updated_x, 0)), int(round(updated_y, 0)), updated_heading), node, cost_to_go, node.cost_to_come + L)
 
@@ -211,7 +211,7 @@ def big_left_turn(L, node, goal_pose):
     updated_heading = (heading + 60) % 360
     updated_x, updated_y = (x + (L * np.cos(np.deg2rad(updated_heading))), y + (L * np.sin(np.deg2rad(updated_heading))))
 
-    cost_to_go = calc_euclidian_distance((updated_x, updated_y, 60), goal_pose, L)
+    cost_to_go = calc_euclidian_distance((updated_x, updated_y, updated_heading), goal_pose)
 
     child = NewNode((int(round(updated_x, 0)), int(round(updated_y, 0)), updated_heading), node, cost_to_go, node.cost_to_come + L)
 
@@ -223,7 +223,7 @@ def big_right_turn(L, node, goal_pose):
     updated_heading = (heading - 60) % 360
     updated_x, updated_y = (x + (L * np.cos(np.deg2rad(updated_heading))), y + (L * np.sin(np.deg2rad(updated_heading))))
 
-    cost_to_go = calc_euclidian_distance((updated_x, updated_y, -60), goal_pose, L)
+    cost_to_go = calc_euclidian_distance((updated_x, updated_y, updated_heading), goal_pose)
 
     child = NewNode((int(round(updated_x, 0)), int(round(updated_y, 0)), updated_heading), node, cost_to_go, node.cost_to_come + L)
 
@@ -301,7 +301,7 @@ def astar(L, start_pose, goal_pose, clearance):
     explored_nodes = []
 
     # Create start node and add it to open list
-    start_node = NewNode(start_pose, None, calc_euclidian_distance(start_pose, goal_pose, L), 0)
+    start_node = NewNode(start_pose, None, calc_euclidian_distance(start_pose, goal_pose), 0)
     open_list.append((start_node, start_node.total_cost))
     open_list_info[start_node.pose] = start_node
 
