@@ -399,10 +399,9 @@ def vizualize(game_map, start, goal, path, explored_nodes):
     print("Time taken to draw explored nodes:", mid_time - start_time)
 
     if path is not None:
-        for pose in path:
-            # print(type(game_map))
-            game_map[game_map.shape[0] - pose[1], pose[0]] = [0, 0, 0]
-            game_map_copy[game_map.shape[0] - pose[1], pose[0]] = [0, 0, 0]
+        for i in range(0, len(path) - 1):
+            cv.arrowedLine(game_map, (path[i][0], game_map.shape[0] - path[i][1] - 1), (path[i+1][0], game_map.shape[0] - path[i+1][1] - 1), [255, 0, 0], 1, tipLength=0.5)
+            cv.arrowedLine(game_map_copy, (path[i][0], game_map.shape[0] - path[i][1] - 1), (path[i+1][0], game_map.shape[0] - path[i+1][1] - 1), [255, 0, 0], 1, tipLength=0.5)
             game_video.write(game_map.astype(np.uint8))
 
     cv.circle(game_map_copy, (start[0], game_map.shape[0] - start[1] - 1), 5, (0, 0, 255), 2)
