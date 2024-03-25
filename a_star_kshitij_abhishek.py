@@ -304,7 +304,7 @@ def astar(L, start_pose, goal_pose, clearance):
     start_node = NewNode(start_pose, None, calc_euclidian_distance(start_pose, goal_pose), 0)
     open_list.append((start_node, start_node.total_cost))
     open_list_info[start_node.pose] = start_node
-
+    start_time = time.time()
     while open_list:
         # Get the node with the minimum total cost and add to closed list
         open_list.sort(key=lambda x: x[1]) # sort open list based on total cost
@@ -315,17 +315,11 @@ def astar(L, start_pose, goal_pose, clearance):
         closed_list.append(current_node)
         closed_list_info[current_node.pose] = current_node
 
-        # # Debug print statements
-        # print("Exploring node: ", current_node.pose)
-        # print("Cost to come: ", current_node.cost_to_come)
-        # print("Cost to go: ", current_node.cost_to_go)
-        # print("Total cost: ", current_node.total_cost)
-        # print('\n')
-
-        # TODO: Implement goal threshold
         # Check if goal reached
         if near_goal(current_node.pose, goal_pose, L // 2):
             path = backtrack_path(current_node)
+            end_time = time.time()
+            print("Time taken by A-Star:", end_time - start_time)
             return explored_nodes, path
 
         else:
@@ -346,7 +340,8 @@ def astar(L, start_pose, goal_pose, clearance):
                     open_list_info[child.pose] = child
 
                     explored_nodes.append(child)
-
+    end_time = time.time()
+    print("Time taken by A-Star:", end_time - start_time)
     return explored_nodes, None
 
 # Reused from Previous Assignment
@@ -378,6 +373,8 @@ def vizualize(game_map, start, goal, path, explored_nodes):
         path (list): A list of coordinates representing the shortest path
         explored_nodes (list): A list of explored nodes
     """
+    start_time = time.time()
+
     cv.circle(game_map, (start[0], game_map.shape[0] - start[1] - 1), 5, (0, 0, 255), -1)
     cv.circle(game_map, (goal[0], game_map.shape[0] - goal[1] - 1), 5, (0, 255, 0), -1)
 
@@ -398,6 +395,9 @@ def vizualize(game_map, start, goal, path, explored_nodes):
             game_video.write(game_map.astype(np.uint8))
             count = 0
 
+    mid_time = time.time()
+    print("Time taken to draw explored nodes:", mid_time - start_time)
+
     if path is not None:
         for pose in path:
             # print(type(game_map))
@@ -409,6 +409,8 @@ def vizualize(game_map, start, goal, path, explored_nodes):
     cv.circle(game_map_copy, (goal[0], game_map.shape[0] - goal[1] - 1), 5, (0, 255, 0), 2)
     cv.imwrite('final_map.png', game_map_copy)
     game_video.release()
+    end_time = time.time()
+    print("Time taken to draw path:", end_time - mid_time)
 
 def main():
     game_map = create_map()
