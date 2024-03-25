@@ -148,7 +148,7 @@ def near_goal(current_pose, goal_pose, threshold):
     return np.sqrt(pow(x2 - x1, 2) + pow(y2 - y1, 2)) <= threshold
 
 # TODO: Recheck cost to go heuristic function
-def calc_euclidian_distance(current_pose, goal_pose, L):
+def calc_euclidian_distance(current_pose, goal_pose):
     """Calculates euclidian distance between the current and goal nodes
        for estimating cost to go
 
@@ -171,57 +171,61 @@ def calc_euclidian_distance(current_pose, goal_pose, L):
 
 
 def move_forward(L, node, goal_pose):
-    x, y, _ = node.pose
+    x, y, heading = node.pose
 
-    updated_x, updated_y = (x + (L * np.cos(np.deg2rad(0))), y + (L * np.sin(np.deg2rad(0))))
+    updated_x, updated_y = (x + (L * np.cos(np.deg2rad(heading))), y + (L * np.sin(np.deg2rad(heading))))
 
-    cost_to_go = calc_euclidian_distance((updated_x, updated_y, 0), goal_pose, L)
+    cost_to_go = calc_euclidian_distance((updated_x, updated_y, heading), goal_pose)
 
-    child = NewNode((int(round(updated_x, 0)), int(round(updated_y, 0)), 0), node, cost_to_go, node.cost_to_come + L)
+    child = NewNode((int(round(updated_x, 0)), int(round(updated_y, 0)), heading), node, cost_to_go, node.cost_to_come + L)
 
     return child, L
 
 def small_left_turn(L, node, goal_pose):
-    x, y, _ = node.pose
+    x, y, heading = node.pose
 
-    updated_x, updated_y = (x + (L * np.cos(np.deg2rad(30))), y + (L * np.sin(np.deg2rad(30))))
+    updated_heading = (heading + 30) % 360
+    updated_x, updated_y = (x + (L * np.cos(np.deg2rad(updated_heading))), y + (L * np.sin(np.deg2rad(updated_heading))))
 
-    cost_to_go = calc_euclidian_distance((updated_x, updated_y, 30), goal_pose, L)
+    cost_to_go = calc_euclidian_distance((updated_x, updated_y, updated_heading), goal_pose)
 
-    child = NewNode((int(round(updated_x, 0)), int(round(updated_y, 0)), 30), node, cost_to_go, node.cost_to_come + L)
+    child = NewNode((int(round(updated_x, 0)), int(round(updated_y, 0)), updated_heading), node, cost_to_go, node.cost_to_come + L)
 
     return child, L
 
 def small_right_turn(L, node, goal_pose):
-    x, y, _ = node.pose
+    x, y, heading = node.pose
 
-    updated_x, updated_y = (x + (L * np.cos(np.deg2rad(-30))), y + (L * np.sin(np.deg2rad(-30))))
+    updated_heading = (heading - 30) % 360
+    updated_x, updated_y = (x + (L * np.cos(np.deg2rad(updated_heading))), y + (L * np.sin(np.deg2rad(updated_heading))))
 
-    cost_to_go = calc_euclidian_distance((updated_x, updated_y, -30), goal_pose, L)
+    cost_to_go = calc_euclidian_distance((updated_x, updated_y, updated_heading), goal_pose)
 
-    child = NewNode((int(round(updated_x, 0)), int(round(updated_y, 0)), -30), node, cost_to_go, node.cost_to_come + L)
+    child = NewNode((int(round(updated_x, 0)), int(round(updated_y, 0)), updated_heading), node, cost_to_go, node.cost_to_come + L)
 
     return child, L
 
 def big_left_turn(L, node, goal_pose):
-    x, y, _ = node.pose
+    x, y, heading = node.pose
 
-    updated_x, updated_y = (x + (L * np.cos(np.deg2rad(60))), y + (L * np.sin(np.deg2rad(60))))
+    updated_heading = (heading + 60) % 360
+    updated_x, updated_y = (x + (L * np.cos(np.deg2rad(updated_heading))), y + (L * np.sin(np.deg2rad(updated_heading))))
 
-    cost_to_go = calc_euclidian_distance((updated_x, updated_y, 60), goal_pose, L)
+    cost_to_go = calc_euclidian_distance((updated_x, updated_y, updated_heading), goal_pose)
 
-    child = NewNode((int(round(updated_x, 0)), int(round(updated_y, 0)), 60), node, cost_to_go, node.cost_to_come + L)
+    child = NewNode((int(round(updated_x, 0)), int(round(updated_y, 0)), updated_heading), node, cost_to_go, node.cost_to_come + L)
 
     return child, L
 
 def big_right_turn(L, node, goal_pose):
-    x, y, _ = node.pose
+    x, y, heading = node.pose
 
-    updated_x, updated_y = (x + (L * np.cos(np.deg2rad(-60))), y + (L * np.sin(np.deg2rad(-60))))
+    updated_heading = (heading - 60) % 360
+    updated_x, updated_y = (x + (L * np.cos(np.deg2rad(updated_heading))), y + (L * np.sin(np.deg2rad(updated_heading))))
 
-    cost_to_go = calc_euclidian_distance((updated_x, updated_y, -60), goal_pose, L)
+    cost_to_go = calc_euclidian_distance((updated_x, updated_y, updated_heading), goal_pose)
 
-    child = NewNode((int(round(updated_x, 0)), int(round(updated_y, 0)), -60), node, cost_to_go, node.cost_to_come + L)
+    child = NewNode((int(round(updated_x, 0)), int(round(updated_y, 0)), updated_heading), node, cost_to_go, node.cost_to_come + L)
 
     return child, L
 
@@ -244,35 +248,35 @@ def get_child_nodes(L, node, goal_pose, clearance):
     if not in_obstacles(child.pose, clearance):
         child_nodes.append((child, child_cost))
     else:
-        print("Child detected in obstacle space, not generating this node")
+        # print("Child detected in obstacle space, not generating this node")
         del child
 
     child, child_cost = small_left_turn(L, node, goal_pose)
     if not in_obstacles(child.pose, clearance):
         child_nodes.append((child, child_cost))
     else:
-        print("Child detected in obstacle space, not generating this node")
+        # print("Child detected in obstacle space, not generating this node")
         del child
 
     child, child_cost = small_right_turn(L, node, goal_pose)
     if not in_obstacles(child.pose, clearance):
         child_nodes.append((child, child_cost))
     else:
-        print("Child detected in obstacle space, not generating this node")
+        # print("Child detected in obstacle space, not generating this node")
         del child
 
     child, child_cost = big_left_turn(L, node, goal_pose)
     if not in_obstacles(child.pose, clearance):
         child_nodes.append((child, child_cost))
     else:
-        print("Child detected in obstacle space, not generating this node")
+        # print("Child detected in obstacle space, not generating this node")
         del child
 
     child, child_cost = big_right_turn(L, node, goal_pose)
     if not in_obstacles(child.pose, clearance):
         child_nodes.append((child, child_cost))
     else:
-        print("Child detected in obstacle space, not generating this node")
+        # print("Child detected in obstacle space, not generating this node")
         del child
 
     return child_nodes
@@ -297,15 +301,15 @@ def astar(L, start_pose, goal_pose, clearance):
     explored_nodes = []
 
     # Create start node and add it to open list
-    start_node = NewNode(start_pose, None, calc_euclidian_distance(start_pose, goal_pose, L), 0)
+    start_node = NewNode(start_pose, None, calc_euclidian_distance(start_pose, goal_pose), 0)
     open_list.append((start_node, start_node.total_cost))
     open_list_info[start_node.pose] = start_node
 
     while open_list:
-
         # Get the node with the minimum total cost and add to closed list
         open_list.sort(key=lambda x: x[1]) # sort open list based on total cost
         current_node, _ = open_list.pop(0)
+        print(current_node.pose)
         cost_to_come = current_node.cost_to_come
         open_list_info.pop(current_node.pose)
         closed_list.append(current_node)
@@ -413,12 +417,13 @@ def main():
     start_point_input = (int(input("Enter x coordinate of start point: ")), int(input("Enter y coordinate of start point: ")), int(input("Enter the start angle of the robot in multiples of 30deg(0 <= theta <= 360): ")))
     goal_point_input = (int(input("Enter x coordinate of goal point: ")), int(input("Enter y coordinate of goal point: ")), int(input("Enter the start angle of the robot in multiples of 30deg(0 <= theta <= 360): ")))
     clearance_input = int(input("Enter the clearance for robot: "))
+    robot_radius = int(input("Robot Radius: "))
     L = int(input("Enter the step length of the robot (1 <= L <= 10): "))
 
     # Convert input 1200x500 space to 600x250 space
     start_point = (int(np.interp(start_point_input[0], [0, 1200], [0, 1200//2])), int(np.interp(start_point_input[1], [0, 500], [0, 500//2])), start_point_input[2])
     goal_point = (int(np.interp(goal_point_input[0], [0, 1200], [0, 1200//2])), int(np.interp(goal_point_input[1], [0, 500], [0, 500//2])), goal_point_input[2])
-    clearance = int(clearance_input // 2)
+    clearance = int(clearance_input + robot_radius // 2)
 
     # Check if start and goal points are in obstacles
     if in_obstacles(start_point, clearance):
