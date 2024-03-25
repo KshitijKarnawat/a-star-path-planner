@@ -5,6 +5,8 @@ a_star_kshitij_abhishek.py
 @author:    Kshitij Karnawat, Abhishekh Reddy
 @date:      19th March 2024
 @version:   2.0
+
+@github:    https://github.com/KshitijKarnawat/a-star-path-planner
 """
 
 import numpy as np
@@ -291,7 +293,6 @@ def astar(L, start_pose, goal_pose, clearance):
         # Get the node with the minimum total cost and add to closed list
         open_list.sort(key=lambda x: x[1]) # sort open list based on total cost
         current_node, _ = open_list.pop(0)
-        print(current_node.pose)
         cost_to_come = current_node.cost_to_come
         open_list_info.pop(current_node.pose)
         closed_list.append(current_node)
