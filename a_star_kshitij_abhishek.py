@@ -103,22 +103,18 @@ def in_obstacles(pose, clearance):
     vertical_shift = 448//2 # needed as hexagon center is made on x = 0
 
     if (x < x_min + bloat) or (x > x_max - bloat) or (y < y_min + bloat) or (y > y_max - bloat):
-        # print("Out of bounds")
         return True
 
     # Rectangle 1
     elif (x >= 100//2 - bloat and x <= 175//2 + bloat) and (y >= 100//2 - bloat and y <= 500//2):
-        # print("In rectangle 1")
         return True
 
     # Rectangle 2
     elif (x >= 275//2 - bloat and x <= 350//2 + bloat) and (y >= 0 and y <= 400//2 + bloat):
-        # print("In rectangle 2")
         return True
 
     # Hexagon
     elif (x >= 520//2 - bloat) and (x <= 780//2 + bloat) and ((x  + 1.7333 * y) <= 930//2 - (2 * bloat) + vertical_shift ) and ((x - 1.7333 * y) >= 370//2 + (2 * bloat) - vertical_shift) and ((x - 1.7333 * y) <= 930//2 + bloat - vertical_shift ) and ((x  + 1.7333 * y) >= 370//2 - bloat + vertical_shift):
-        # print("In hexagon")
         return True
 
     # Arch
@@ -126,17 +122,14 @@ def in_obstacles(pose, clearance):
 
     # Part 1
     elif (x >= 1020//2 - bloat and x <= 1100//2 + bloat) and (y >= 50//2 + bloat and y <= 450//2 - bloat):
-        # print("In arch part 1")
         return True
 
     # Part 2
     elif (x >= 900//2 - bloat and x <= 1100//2 + bloat) and (y >= 375//2 - bloat and y <= 450//2 + bloat):
-        # print("In arch part 2")
         return True
 
     # Part 3
     elif (x >= 900//2 - bloat and x <= 1100//2 + bloat) and (y >= 50//2 - bloat and y <= 125//2 + bloat):
-        # print("In arch part 3")
         return True
 
     return False
@@ -147,7 +140,6 @@ def near_goal(current_pose, goal_pose, threshold):
 
     return np.sqrt(pow(x2 - x1, 2) + pow(y2 - y1, 2)) <= threshold
 
-# TODO: Recheck cost to go heuristic function
 def calc_euclidian_distance(current_pose, goal_pose):
     """Calculates euclidian distance between the current and goal nodes
        for estimating cost to go
@@ -159,15 +151,10 @@ def calc_euclidian_distance(current_pose, goal_pose):
     Returns:
         Float: Euclidian distance which is cost to move to the goal node
     """
-    x1, y1, heading1 = current_pose
-    x2, y2, heading2 = goal_pose
-    # r1 = np.sqrt(pow(x1, 2) + pow(y1, 2))
-    # r2 = np.sqrt(pow(x2, 2) + pow(y2, 2))
-    # theta1 = (r1 / L) * np.tan(heading1)
-    # theta2 = (r2 / L) * np.tan(heading2)
+    x1, y1, _ = current_pose
+    x2, y2, _ = goal_pose
 
     return np.sqrt(pow(x2 - x1, 2) + pow(y2 - y1, 2))
-    # return np.sqrt(pow(r1, 2) + pow(r2, 2) - 2 * r1 * r2 * np.cos(theta1 - theta2))
 
 
 def move_forward(L, node, goal_pose):
@@ -248,35 +235,30 @@ def get_child_nodes(L, node, goal_pose, clearance):
     if not in_obstacles(child.pose, clearance):
         child_nodes.append((child, child_cost))
     else:
-        # print("Child detected in obstacle space, not generating this node")
         del child
 
     child, child_cost = small_left_turn(L, node, goal_pose)
     if not in_obstacles(child.pose, clearance):
         child_nodes.append((child, child_cost))
     else:
-        # print("Child detected in obstacle space, not generating this node")
         del child
 
     child, child_cost = small_right_turn(L, node, goal_pose)
     if not in_obstacles(child.pose, clearance):
         child_nodes.append((child, child_cost))
     else:
-        # print("Child detected in obstacle space, not generating this node")
         del child
 
     child, child_cost = big_left_turn(L, node, goal_pose)
     if not in_obstacles(child.pose, clearance):
         child_nodes.append((child, child_cost))
     else:
-        # print("Child detected in obstacle space, not generating this node")
         del child
 
     child, child_cost = big_right_turn(L, node, goal_pose)
     if not in_obstacles(child.pose, clearance):
         child_nodes.append((child, child_cost))
     else:
-        # print("Child detected in obstacle space, not generating this node")
         del child
 
     return child_nodes
@@ -362,7 +344,6 @@ def backtrack_path(goal_node):
     return path[::-1]
 
 # Reused from Previous Assignment
-# TODO: Modify if required
 def vizualize(game_map, start, goal, path, explored_nodes):
     """Vizualizes the path and explored nodes
 
@@ -382,11 +363,6 @@ def vizualize(game_map, start, goal, path, explored_nodes):
     game_map_copy = game_map.copy()
     count = 0
     for node in explored_nodes:
-        # game_map[game_map.shape[0] - pose[1] - 1, pose[0]] = [100, 255, 100]
-        # game_map_copy[game_map.shape[0] - pose[1] - 1, pose[0]] = [100, 255, 100]
-
-        # TODO: Write statements to display arrow lines using cv2
-        #       Point 1 would be the parent node coordinates, Point 2 will be the node coordinates.
         cv.arrowedLine(game_map, (node.parent.pose[0], game_map.shape[0] - node.parent.pose[1] - 1), (node.pose[0], game_map.shape[0] - node.pose[1] - 1), [100, 255, 100], 1, tipLength=0.5)
         cv.arrowedLine(game_map_copy, (node.parent.pose[0], game_map.shape[0] - node.parent.pose[1] - 1), (node.pose[0], game_map.shape[0] - node.pose[1] - 1), [100, 255, 100], 1, tipLength=0.5)
 
@@ -399,10 +375,9 @@ def vizualize(game_map, start, goal, path, explored_nodes):
     print("Time taken to draw explored nodes:", mid_time - start_time)
 
     if path is not None:
-        for pose in path:
-            # print(type(game_map))
-            game_map[game_map.shape[0] - pose[1], pose[0]] = [0, 0, 0]
-            game_map_copy[game_map.shape[0] - pose[1], pose[0]] = [0, 0, 0]
+        for i in range(0, len(path) - 1):
+            cv.arrowedLine(game_map, (path[i][0], game_map.shape[0] - path[i][1] - 1), (path[i+1][0], game_map.shape[0] - path[i+1][1] - 1), [255, 0, 0], 1, tipLength=0.5)
+            cv.arrowedLine(game_map_copy, (path[i][0], game_map.shape[0] - path[i][1] - 1), (path[i+1][0], game_map.shape[0] - path[i+1][1] - 1), [255, 0, 0], 1, tipLength=0.5)
             game_video.write(game_map.astype(np.uint8))
 
     cv.circle(game_map_copy, (start[0], game_map.shape[0] - start[1] - 1), 5, (0, 0, 255), 2)
