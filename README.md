@@ -33,9 +33,15 @@ The following test cases have been provided for you.
 ### Test Case 1
 
 ```txt
-Starting Coordinates = 10, 400
+Starting Coordinates = 10, 400, 0
 
-Goal Coordinates = 1180, 10
+Goal Coordinates = 1180, 10, 30
+
+Step Size = 10
+
+Clearance = 2
+
+Radius = 2
 ```
 
 <!-- ![Dijkstra Path Planner](TEST1/game_vizualization.gif) -->
@@ -43,9 +49,15 @@ Goal Coordinates = 1180, 10
 ### Test Case 2
 
 ```txt
-Starting Coordinates = 250, 50
+Starting Coordinates = 250, 50, 30
 
-Goal Coordinates = 950, 250
+Goal Coordinates = 950, 250, 60
+
+Step Size = 5
+
+Clearance = 2
+
+Radius = 2
 ```
 
 <!-- ![Dijkstra Path Planner](TEST2/game_vizualization.gif) -->
@@ -53,9 +65,15 @@ Goal Coordinates = 950, 250
 ### Test Case 3
 
 ```txt
-Starting Coordinates = 1180, 250
+Starting Coordinates = 1180, 250, 0
 
-Goal Coordinates = 950, 250
+Goal Coordinates = 950, 250, 180
+
+Step Size = 1
+
+Clearance = 2
+
+Radius = 2
 ```
 
 <!-- ![Dijkstra Path Planner](TEST3/game_vizualization.gif) -->
