@@ -47,19 +47,19 @@ def create_map():
     ### Refer https://docs.opencv.org/3.4/dc/da5/tutorial_py_drawing_functions.html on how to draw Polygons
 
     # Define rectangle vertices
-    rectange_1 = np.array([[175//2, 100//2],
-                           [175//2, 500//2],
-                           [100//2, 500//2],
-                           [100//2, 100//2]], dtype=np.int32)
+    rectange_1 = np.array([[87, 50],
+                           [87, 250],
+                           [50, 250],
+                           [50, 50]], dtype=np.int32)
 
-    rectangle_2 = np.array([[350//2, 0],
-                           [350//2, 400//2],
-                           [275//2, 400//2],
-                           [275//2, 0]], dtype=np.int32)
+    rectangle_2 = np.array([[175, 0],
+                           [175, 200],
+                           [137, 200],
+                           [137, 0]], dtype=np.int32)
 
     # Define hexagon vertices
-    side_length = 150//2
-    hexagon_center = (650//2, 250//2)
+    side_length = 75
+    hexagon_center = (325, 125)
     hexagon_vertices = []
     for i in range(6):
         angle_rad = np.deg2rad(90) + np.deg2rad(60 * i)  # Angle in radians for each vertex + 90 for rotating the hexagon
@@ -70,14 +70,14 @@ def create_map():
     hexagon = np.array(hexagon_vertices, dtype=np.int32)
 
     # Define arch vertices
-    arch = np.array([[1100//2, 50//2],
-                     [1100//2, 450//2],
-                     [900//2, 450//2],
-                     [900//2, 375//2],
-                     [1020//2, 375//2],
-                     [1020//2, 125//2],
-                     [900//2, 125//2],
-                     [900//2,50//2]], dtype=np.int32)
+    arch = np.array([[550, 25],
+                     [550, 225],
+                     [450, 225],
+                     [450, 187],
+                     [510, 187],
+                     [510, 62],
+                     [450, 62],
+                     [450, 25]], dtype=np.int32)
 
     game_map = cv.fillPoly(game_map, [rectange_1, rectangle_2, hexagon, arch], (0, 0, 0))
 
@@ -96,42 +96,42 @@ def in_obstacles(pose, clearance):
         bool: True if the coordinates are in obstacles, False otherwise
     """
     # Set Max and Min values for x and y
-    x_max, y_max = 1200//2, 500//2
+    x_max, y_max = 600, 250
     x_min, y_min = 0, 0
 
     x, y, heading = pose
 
     bloat = clearance
-    vertical_shift = 448//2 # needed as hexagon center is made on x = 0
+    vertical_shift = 224 # needed as hexagon center is made on x = 0
 
     if (x < x_min + bloat) or (x > x_max - bloat) or (y < y_min + bloat) or (y > y_max - bloat):
         return True
 
     # Rectangle 1
-    elif (x >= 100//2 - bloat and x <= 175//2 + bloat) and (y >= 100//2 - bloat and y <= 500//2):
+    elif (x >= 50 - bloat and x <= 87 + bloat) and (y >= 50 - bloat and y <= 250):
         return True
 
     # Rectangle 2
-    elif (x >= 275//2 - bloat and x <= 350//2 + bloat) and (y >= 0 and y <= 400//2 + bloat):
+    elif (x >= 137 - bloat and x <= 175 + bloat) and (y >= 0 and y <= 200 + bloat):
         return True
 
     # Hexagon
-    elif (x >= 520//2 - bloat) and (x <= 780//2 + bloat) and ((x  + 1.7333 * y) <= 930//2 - (2 * bloat) + vertical_shift ) and ((x - 1.7333 * y) >= 370//2 + (2 * bloat) - vertical_shift) and ((x - 1.7333 * y) <= 930//2 + bloat - vertical_shift ) and ((x  + 1.7333 * y) >= 370//2 - bloat + vertical_shift):
+    elif (x >= 260 - bloat) and (x <= 390 + bloat) and ((x  + 1.7333 * y) <= 465 - (2 * bloat) + vertical_shift ) and ((x - 1.7333 * y) >= 185 + (2 * bloat) - vertical_shift) and ((x - 1.7333 * y) <= 465 + bloat - vertical_shift ) and ((x  + 1.7333 * y) >= 185 - bloat + vertical_shift):
         return True
 
     # Arch
     # Divide the arch into 3 parts and check for each part
 
     # Part 1
-    elif (x >= 1020//2 - bloat and x <= 1100//2 + bloat) and (y >= 50//2 + bloat and y <= 450//2 - bloat):
+    elif (x >= 510 - bloat and x <= 550 + bloat) and (y >= 25 + bloat and y <= 225 - bloat):
         return True
 
     # Part 2
-    elif (x >= 900//2 - bloat and x <= 1100//2 + bloat) and (y >= 375//2 - bloat and y <= 450//2 + bloat):
+    elif (x >= 450 - bloat and x <= 550 + bloat) and (y >= 187 - bloat and y <= 225 + bloat):
         return True
 
     # Part 3
-    elif (x >= 900//2 - bloat and x <= 1100//2 + bloat) and (y >= 50//2 - bloat and y <= 125//2 + bloat):
+    elif (x >= 450 - bloat and x <= 550 + bloat) and (y >= 25 - bloat and y <= 62 + bloat):
         return True
 
     return False
@@ -300,9 +300,9 @@ def astar(L, start_pose, goal_pose, clearance):
 
         # Check if goal reached
         if near_goal(current_node.pose, goal_pose, L // 2):
-            path = backtrack_path(current_node)
             end_time = time.time()
             print("Time taken by A-Star:", end_time - start_time)
+            path = backtrack_path(current_node)
             return explored_nodes, path
 
         else:
@@ -360,7 +360,7 @@ def vizualize(game_map, start, goal, path, explored_nodes):
     cv.circle(game_map, (start[0], game_map.shape[0] - start[1] - 1), 5, (0, 0, 255), -1)
     cv.circle(game_map, (goal[0], game_map.shape[0] - goal[1] - 1), 5, (0, 255, 0), -1)
 
-    game_video = cv.VideoWriter('game_vizualization.avi', cv.VideoWriter_fourcc('M','J','P','G'), 60, (1200//2, 500//2))
+    game_video = cv.VideoWriter('game_vizualization.avi', cv.VideoWriter_fourcc('M','J','P','G'), 60, (600, 250))
     game_map_copy = game_map.copy()
     count = 0
     for node in explored_nodes:
@@ -399,8 +399,8 @@ def main():
     L = int(input("Enter the step length of the robot (1 <= L <= 10): "))
 
     # Convert input 1200x500 space to 600x250 space
-    start_point = (int(np.interp(start_point_input[0], [0, 1200], [0, 1200//2])), int(np.interp(start_point_input[1], [0, 500], [0, 500//2])), start_point_input[2])
-    goal_point = (int(np.interp(goal_point_input[0], [0, 1200], [0, 1200//2])), int(np.interp(goal_point_input[1], [0, 500], [0, 500//2])), goal_point_input[2])
+    start_point = (int(np.interp(start_point_input[0], [0, 1200], [0, 600])), int(np.interp(start_point_input[1], [0, 500], [0, 250])), start_point_input[2])
+    goal_point = (int(np.interp(goal_point_input[0], [0, 1200], [0, 600])), int(np.interp(goal_point_input[1], [0, 500], [0, 250])), goal_point_input[2])
     clearance = int(clearance_input + robot_radius // 2)
 
     # Check if start and goal points are in obstacles
