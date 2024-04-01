@@ -308,11 +308,11 @@ def astar(L, start_pose, goal_pose, clearance):
         else:
             children = get_child_nodes(L, current_node, goal_pose, clearance)
             for child, child_cost in children:
-                if child.pose in closed_list_info.keys():
+                if child.pose in closed_list_info:
                     del child
                     continue
 
-                if child.pose in open_list_info.keys():
+                if child.pose in open_list_info:
                     if child_cost + cost_to_come < open_list_info[child.pose].cost_to_come:
                         open_list_info[child.pose].cost_to_come = child_cost + cost_to_come
                         open_list_info[child.pose].total_cost = open_list_info[child.pose].cost_to_come + open_list_info[child.pose].cost_to_go
